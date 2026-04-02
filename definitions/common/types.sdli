@@ -1,0 +1,39 @@
+# STANAG 4586 DLI Common Types
+# v1.0 Final Alignment
+
+types:
+  # Physical Types
+  uint24: { size: 3, base: uint }
+  uint40: { size: 5, base: uint }
+  
+  # Semantic Types
+  Timestamp: { type: uint40, unit: ms }
+  
+  BAM16: 
+    type: uint16
+    encoding: bam
+    range: [-3.1415926535, 3.1415926535]
+    
+  BAM32:
+    type: uint32
+    encoding: bam
+    range: [-3.1415926535, 3.1415926535]
+    
+  Altitude:
+    type: int32
+    encoding: scaled
+    offset: 0.0
+    scale: 0.01 # cm to m
+    unit: m
+
+  GlobalPos:
+    composition: flattened
+    fields:
+      - { name: latitude, type: BAM32 }
+      - { name: longitude, type: BAM32 }
+      - { name: altitude, type: Altitude }
+
+  # Buffer Types (Fixed Character Lengths)
+  Char16: { length: 16, base: buffer }
+  Char20: { length: 20, base: buffer }
+  Char32: { length: 32, base: buffer }

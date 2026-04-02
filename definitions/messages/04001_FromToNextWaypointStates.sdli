@@ -1,0 +1,32 @@
+# Message #4001: From-To-Next Waypoint States
+# Table 4-74, AEP-84 Vol II
+id: 4001
+name: FromToNextWaypointStates
+group: FlightVehiclePayloadRelevantStatus
+source: UA / VSM
+direction: UA/VSM -> CUCS
+interaction: REPORT
+latency: 500ms
+pv: { size: 3, type: uint24 }
+fields:
+  - { name: time_stamp,           pv_bit: 0,  type: Timestamp }
+  - { name: altitude_type,         pv_bit: 1,  type: uint8, unit: enum }
+  - { name: speed_type,            pv_bit: 2,  type: uint8, unit: enum }
+  - { name: from_waypoint_latitude, pv_bit: 3, type: BAM32, unit: rad }
+  - { name: from_waypoint_longitude, pv_bit: 4, type: BAM32, unit: rad }
+  - { name: from_waypoint_altitude, pv_bit: 5, type: int24, unit: m, scale: 0.02 }
+  - { name: from_waypoint_time,     pv_bit: 6, type: Timestamp }
+  - { name: from_waypoint_number,   pv_bit: 7, type: uint16 }
+  - { name: to_waypoint_latitude,   pv_bit: 8, type: BAM32, unit: rad }
+  - { name: to_waypoint_longitude,  pv_bit: 9, type: BAM32, unit: rad }
+  - { name: to_waypoint_altitude,   pv_bit: 10, type: int24, unit: m, scale: 0.02 }
+  - { name: to_waypoint_speed,      pv_bit: 11, type: uint16, unit: m/s, scale: 0.5 }
+  - { name: to_waypoint_time,       pv_bit: 12, type: Timestamp }
+  - { name: to_waypoint_number,     pv_bit: 13, type: uint16 }
+  - { name: next_waypoint_latitude,  pv_bit: 14, type: BAM32, unit: rad }
+  - { name: next_waypoint_longitude, pv_bit: 15, type: BAM32, unit: rad }
+  - { name: next_waypoint_altitude,  pv_bit: 16, type: int24, unit: m, scale: 0.02 }
+  - { name: next_waypoint_speed,     pv_bit: 17, type: uint16, unit: m/s, scale: 0.5 }
+  - { name: next_waypoint_time,      pv_bit: 18, type: Timestamp }
+  - { name: next_waypoint_number,    pv_bit: 19, type: uint16 }
+  - { name: loiter_valid_for_to_wp, pv_bit: 20, type: uint8, unit: enum }

@@ -1,0 +1,22 @@
+# Message #2017: Loiter Configuration
+# Table 4-54, AEP-84 Vol II
+id: 2017
+name: LoiterConfiguration
+group: VehicleControl
+source: CUCS
+direction: CUCS -> UA/VSM
+interaction: COMMAND
+latency: 100ms
+pv: { size: 2, type: uint16 }
+fields:
+  - { name: time_stamp,           pv_bit: 0,  type: Timestamp }
+  - { name: loiter_type,          pv_bit: 1,  type: uint8, unit: enum }
+  - { name: loiter_radius,        pv_bit: 2,  type: uint16, unit: m, scale: 1.5 }
+  - { name: loiter_length,        pv_bit: 3,  type: uint16, unit: m, scale: 1.5 }
+  - { name: loiter_length_units,  pv_bit: 4,  type: uint8, unit: enum }
+  - { name: loiter_bearing,       pv_bit: 5,  type: BAM16, unit: rad }
+  - { name: loiter_direction,     pv_bit: 6,  type: uint8, unit: enum }
+  - { name: flying_behaviour,     pv_bit: 7,  type: uint8, unit: enum }
+  - { name: loiter_duration,      pv_bit: 8,  type: uint16 }
+  - { name: loiter_duration_units, pv_bit: 9,  type: uint8, unit: enum }
+  - { name: activity_id,           pv_bit: 10, type: uint24 }

@@ -1,0 +1,73 @@
+#pragma once
+
+#include "../BitCursor.hpp"
+#include "../Bam.hpp"
+#include "../Scaled.hpp"
+#include <cstdint>
+
+namespace dli {
+namespace generated {
+
+/**
+ * @brief Auto-generated class for Message #{{ id }}: {{ name }}
+ */
+class {{ name }} {
+public:
+    // Fields
+{% for field in fields %}
+    {{ field.cpp_type }} {{ field.name }};{% if field.unit %} // [{{ field.unit }}]{% endif %}
+{% endfor %}
+
+    /**
+     * @brief Serializes the message into the provided BitCursor.
+     */
+    void serialize(BitCursor& cursor) const {
+        uint32_t pv = 0;
+        // Calculate Presence Vector (PV)
+{% for field in fields %}
+{% if field.pv_bit is not none %}
+        if (has_{{ field.name }}) pv |= (1 << {{ field.pv_bit }});
+{% endif %}
+{% endfor %}
+        
+        cursor.write_int(pv, {{ pv_size }});
+
+        // Write Fields
+{% for field in fields %}
+{% if field.pv_bit is not none %}
+        if (pv & (1 << {{ field.pv_bit }})) {
+{% endif %}
+            {{ field.serialize_expr }}
+{% if field.pv_bit is not none %}
+        }
+{% endif %}
+{% endfor %}
+    }
+
+    void deserialize(BitCursor& cursor) {
+        uint32_t pv = 0;
+        cursor.read_int(pv, {{ pv_size }});
+
+        // Read Fields
+{% for field in fields %}
+{% if field.pv_bit is not none %}
+        if (pv & (1 << {{ field.pv_bit }})) {
+            has_{{ field.name }} = true;
+            {{ field.deserialize_expr }}
+        }
+{% else %}
+        {{ field.deserialize_expr }}
+{% endif %}
+{% endfor %}
+    }
+
+    // Presence Flags for optional fields
+{% for field in fields %}
+{% if field.pv_bit is not none %}
+    bool has_{{ field.name }} = false;
+{% endif %}
+{% endfor %}
+};
+
+} // namespace generated
+} // namespace dli

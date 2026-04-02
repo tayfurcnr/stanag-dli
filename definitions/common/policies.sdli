@@ -1,0 +1,14 @@
+# STANAG 4586 DLI Global Policies
+# Priority: Field Override > Type Policy > Global Policy
+
+policies:
+  defaults:
+    composition: flattened
+    pv_expand: auto
+    endian: big
+    
+  validation:
+    strict: true
+    on_error: fail_fast
+    detect_circular: true
+    detect_unknown_type: true

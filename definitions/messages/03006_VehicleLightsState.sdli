@@ -1,0 +1,13 @@
+# Message #3006: Vehicle Lights State
+# Table 4-62, AEP-84 Vol II
+id: 3006
+name: VehicleLightsState
+group: VehicleStatus
+source: VSM / UA
+direction: VSM/UA -> CUCS
+interaction: REPORT
+latency: 1000ms
+pv: { size: 1, type: uint8 }
+fields:
+  - { name: time_stamp, pv_bit: 0, type: Timestamp }
+  - { name: lights_state, pv_bit: 1, type: uint8, unit: Bitmapped }

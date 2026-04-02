@@ -1,0 +1,24 @@
+# Message #3011: UA Stick Status
+# Table 4-67, AEP-84 Vol II
+id: 3011
+name: UAStickStatus
+group: VehicleStatus
+source: VSM / UA
+direction: VSM/UA -> CUCS
+interaction: REPORT
+latency: 50ms
+pv: { size: 2, type: uint16 }
+fields:
+  - { name: time_stamp,           pv_bit: 0,  type: Timestamp }
+  - { name: lateral_stick,        pv_bit: 1,  type: int8 }
+  - { name: longitudinal_stick,   pv_bit: 2,  type: int8 }
+  - { name: rotational_stick,     pv_bit: 3,  type: int8 }
+  - { name: throttle_stick_eng1,  pv_bit: 4,  type: uint8 }
+  - { name: pitch_stick_eng1,     pv_bit: 5,  type: int8 }
+  - { name: throttle_stick_eng2,  pv_bit: 6,  type: uint8 }
+  - { name: pitch_stick_eng2,     pv_bit: 7,  type: int8 }
+  - { name: throttle_stick_eng3,  pv_bit: 8,  type: uint8 }
+  - { name: pitch_stick_eng3,     pv_bit: 9,  type: int8 }
+  - { name: throttle_stick_eng4,  pv_bit: 10, type: uint8 }
+  - { name: pitch_stick_eng4,     pv_bit: 11, type: int8 }
+  - { name: taxi_stick,           pv_bit: 12, type: int8 }

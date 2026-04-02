@@ -1,0 +1,12 @@
+build/
+*.o
+*.out
+*.log
+session_test
+protocol_test
+test_output*.txt
+test_crc_output.txt
+__pycache__/
+*.pyc
+.vscode/
+

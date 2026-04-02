@@ -1,0 +1,15 @@
+# Message #17000: Message Acknowledgement
+# Table 4-50, AEP-84 Vol II
+id: 17000
+name: MessageAcknowledgement
+group: Miscellaneous
+source: UA / VSM / CUCS
+direction: Bi-directional
+interaction: RESPONSE
+latency: 500ms
+pv: { size: 1, type: uint8 }
+fields:
+  - { name: time_stamp,           pv_bit: 0,  type: Timestamp }
+  - { name: original_time_stamp,  pv_bit: 1,  type: Timestamp }
+  - { name: original_message_type, pv_bit: 2,  type: uint16 }
+  - { name: acknowledgement_type,  pv_bit: 3,  type: uint8, unit: enum }

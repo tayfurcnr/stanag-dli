@@ -1,0 +1,29 @@
+# Message #3002: Vehicle Operating States
+# Table 4-59, AEP-84 Vol II
+id: 3002
+name: VehicleOperatingStates
+group: VehicleStatus
+source: VSM / UA
+direction: VSM/UA -> CUCS
+interaction: REPORT
+latency: 100ms
+pv: { size: 3, type: uint24 }
+fields:
+  - { name: time_stamp,           pv_bit: 0,  type: Timestamp }
+  - { name: commanded_altitude,   pv_bit: 1,  type: int24, unit: m, scale: 0.02 }
+  - { name: altitude_type,         pv_bit: 2,  type: uint8, unit: enum }
+  - { name: commanded_heading,     pv_bit: 3,  type: BAM16, unit: rad }
+  - { name: commanded_course,      pv_bit: 4,  type: BAM16, unit: rad }
+  - { name: commanded_turn_rate,   pv_bit: 5,  type: int16, unit: rad/s, scale: 0.005 }
+  - { name: commanded_roll_rate,   pv_bit: 6,  type: int16, unit: rad/s, scale: 0.005 }
+  - { name: commanded_speed,       pv_bit: 7,  type: uint16, unit: m/s, scale: 0.5 }
+  - { name: speed_type,            pv_bit: 8,  type: uint8, unit: enum }
+  - { name: power_level,           pv_bit: 9,  type: int8,  unit: "%" }
+  - { name: bingo_energy,          pv_bit: 10, type: uint16, unit: "%", scale: 0.16 } # This needs verification for scale
+  - { name: current_energy_level,  pv_bit: 11, type: uint16, unit: "%", scale: 0.16 }
+  - { name: current_energy_usage,  pv_bit: 12, type: uint16, unit: "%/s", scale: 0.002 }
+  - { name: commanded_roll,        pv_bit: 13, type: BAM16, unit: rad }
+  - { name: altitude_command_type, pv_bit: 14, type: uint8, unit: enum }
+  - { name: heading_command_type,  pv_bit: 15, type: uint8, unit: enum }
+  - { name: ua_state,              pv_bit: 16, type: uint8, unit: enum }
+  - { name: thrust_direction,      pv_bit: 17, type: BAM16, unit: rad }

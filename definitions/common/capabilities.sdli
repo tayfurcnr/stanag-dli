@@ -1,0 +1,23 @@
+# STANAG 4586 DLI Capability Dependencies
+# v1.0 Final Alignment (Table 4-5)
+
+capabilities:
+  SystemID:
+    messages: [1, 2, 3, 4, 5]
+    depends_on: [] # Base group
+
+  FlightVehicleStatus:
+    messages: [4000, 4001, 4002]
+    depends_on: [SystemID]
+
+  FlightVehicleCommand:
+    messages: [2000, 2001, 2002]
+    depends_on: [SystemID, FlightVehicleStatus]
+
+  PayloadCommand:
+    messages: [2016, 2017]
+    depends_on: [SystemID, SubsystemStatus]
+    
+  SubsystemStatus:
+    messages: [19000, 19100, 21000]
+    depends_on: [SystemID]
