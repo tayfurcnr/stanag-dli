@@ -4,11 +4,13 @@
 #include <vector>
 #include <chrono>
 #include <functional>
-#include <iostream>
-#include "DliMessage.hpp"
-#include "Dispatcher.hpp"
-#include "Checksum.hpp"
-#include "generated/MessageAcknowledgement.hpp"
+#include <dli/core/ILogger.hpp>
+#include <dli/core/BitCursor.hpp>
+#include <dli/core/Checksum.hpp>
+#include <dli/protocol/DliHeader.hpp>
+#include <dli/protocol/DliMessage.hpp>
+#include <dli/protocol/Dispatcher.hpp>
+#include <dli/generated/MessageAcknowledgement.hpp>
 
 namespace dli {
 
@@ -127,7 +129,7 @@ public:
                 ckCursor.read<uint16_t>(actualCRC);
 
                 if (expectedCRC != actualCRC) {
-                    std::cout << "  [DEBUG] CRC-16 Validation Failed. Expected: " << expectedCRC << ", Got: " << actualCRC << std::endl;
+                    Logger::debug("CRC-16 Validation Failed. Expected: " + std::to_string(expectedCRC) + ", Got: " + std::to_string(actualCRC));
                     return; // Drop corrupted frame
                 }
             } else if (cksumType >= 0x02) { // 4-byte CRC
@@ -139,7 +141,7 @@ public:
                 ckCursor.read<uint32_t>(actualCRC);
 
                 if (expectedCRC != actualCRC) {
-                    std::cout << "  [DEBUG] CRC-32 Validation Failed. Expected: " << expectedCRC << ", Got: " << actualCRC << std::endl;
+                    Logger::debug("CRC-32 Validation Failed. Expected: " + std::to_string(expectedCRC) + ", Got: " + std::to_string(actualCRC));
                     return; // Drop corrupted frame
                 }
             }
@@ -195,7 +197,7 @@ private:
         if (ackMsg.deserialize(cursor)) {
             // Guard against uninitialized PV fields (garbage data)
             if (!ackMsg.body.has_original_message_type || !ackMsg.body.has_original_time_stamp) {
-                std::cout << "  [DEBUG] Ignored Invalid ACK (Missing PV Flags)" << std::endl;
+                Logger::debug("Ignored Invalid ACK (Missing PV Flags)");
                 return;
             }
 
@@ -203,20 +205,20 @@ private:
             uint16_t origType = ackMsg.body.original_message_type;
             uint64_t origTs = ackMsg.body.original_time_stamp;
 
-            std::cout << "  [DEBUG] Session received ACK from Node: " << senderId << " for Type: " << origType << ", TS: " << origTs << std::endl;
+            Logger::debug("Session received ACK from Node: " + std::to_string(senderId) + " for Type: " + std::to_string(origType) + ", TS: " + std::to_string(origTs));
 
             auto ackKey = std::make_tuple(senderId, origType, origTs);
             auto it = m_pendingAcks.find(ackKey);
             
             if (it != m_pendingAcks.end()) {
-                std::cout << "  [DEBUG] Correlation Successful!" << std::endl;
+                Logger::debug("Correlation Successful!");
                 if (it->second.callback) it->second.callback(AckStatus::Success);
                 m_pendingAcks.erase(it);
             } else {
-                std::cout << "  [DEBUG] Correlation Failed!" << std::endl;
+                Logger::debug("Correlation Failed!");
             }
         } else {
-            std::cout << "  [DEBUG] Failed to deserialize incoming ACK!" << std::endl;
+            Logger::debug("Failed to deserialize incoming ACK!");
         }
     }
 

@@ -2,8 +2,8 @@
 #include <cassert>
 #include <thread>
 #include <vector>
-#include "dli/DliSession.hpp"
-#include "dli/generated/InertialStates.hpp"
+#include <dli/session/DliSession.hpp>
+#include <dli/generated/InertialStates.hpp>
 
 using namespace dli;
 using namespace dli::generated;

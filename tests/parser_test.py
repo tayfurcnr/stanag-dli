@@ -4,7 +4,8 @@ import os
 def test_dsl_parsing():
     print("[Test] DSL Parsing & GlobalPos Resolution...")
     
-    root = "/home/tayfurcnr/Desktop/STANAG/DLI/definitions/common/"
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    root = os.path.join(root_dir, "definitions/common/")
     types_path = os.path.join(root, "types.sdli")
     policies_path = os.path.join(root, "policies.sdli")
     

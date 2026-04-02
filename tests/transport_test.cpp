@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include <dli/transport/UdpTransport.hpp>
-#include <dli/DliMessage.hpp>
+#include <UdpTransport.hpp>
+#include <dli/protocol/DliMessage.hpp>
 #include <dli/generated/InertialStates.hpp>
 #include <thread>
 #include <chrono>

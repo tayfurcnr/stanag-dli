@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <cstddef>
 #include <vector>
-#include "ErrorState.hpp"
-#include "Endian.hpp"
+#include <dli/core/ErrorState.hpp>
+#include <dli/core/Endian.hpp>
 
 namespace dli {
 

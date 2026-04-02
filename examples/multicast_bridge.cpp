@@ -1,5 +1,6 @@
-#include <dli/transport/UdpTransport.hpp>
-#include <dli/DliHeader.hpp>
+#include <UdpTransport.hpp>
+#include <dli/protocol/DliHeader.hpp>
+#include <dli/core/BitCursor.hpp>
 #include <iostream>
 #include <thread>
 #include <chrono>

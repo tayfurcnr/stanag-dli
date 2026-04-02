@@ -4,7 +4,8 @@ import os
 def check_dependencies():
     print("[Test] Capability Dependency Check...")
     
-    root = "/home/tayfurcnr/Desktop/STANAG/DLI/definitions/"
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    root = os.path.join(root_dir, "definitions/")
     cap_path = os.path.join(root, "common/capabilities.sdli")
     profiles_dir = os.path.join(root, "profiles/")
     

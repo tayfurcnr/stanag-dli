@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cassert>
-#include "dli/generated/InertialStates.hpp"
-#include "dli/DliMessage.hpp"
-#include "dli/Dispatcher.hpp"
+#include <dli/generated/InertialStates.hpp>
+#include <dli/protocol/DliMessage.hpp>
+#include <dli/protocol/Dispatcher.hpp>
 
 using namespace dli;
 using namespace dli::generated;
@@ -49,7 +49,7 @@ int main() {
     Dispatcher dispatcher;
     bool messageReceived = false;
 
-    dispatcher.registerHandler(4000, [&](const DliHeader& header, BitCursor& payload) {
+    dispatcher.registerHandler(4000, [&](const DliHeader& header, BitCursor& payload) -> uint64_t {
         std::cout << "[RECV] Dispatcher triggered for Message #4000" << std::endl;
         assert(header.source_id == 12345);
         assert(header.destination_id == 54321);
@@ -63,9 +63,11 @@ int main() {
         assert(receivedBody.time_stamp == 1000);
         assert(receivedBody.has_latitude);
         messageReceived = true;
+        return receivedBody.time_stamp;
     });
 
-    bool success = dispatcher.dispatch(buffer, totalBytes);
+    auto res = dispatcher.dispatch(buffer, totalBytes);
+    bool success = res.has_value();
     
     if (success && messageReceived) {
         std::cout << "[SUCCESS] DLI Protocol Round-trip verified!" << std::endl;

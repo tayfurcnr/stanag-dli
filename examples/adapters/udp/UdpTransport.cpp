@@ -1,7 +1,7 @@
-#include <dli/transport/UdpTransport.hpp>
-#include <dli/BitCursor.hpp>
+#include "UdpTransport.hpp"
+#include <dli/core/BitCursor.hpp>
+#include <dli/core/ILogger.hpp>
 #include <cstring>
-#include <iostream>
 
 namespace dli {
 
@@ -19,7 +19,10 @@ UdpTransport::~UdpTransport() {
 
 bool UdpTransport::start() {
     m_sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (m_sockfd < 0) return false;
+    if (m_sockfd < 0) {
+        Logger::error("Failed to create UDP socket");
+        return false;
+    }
 
     int reuse = 1;
     setsockopt(m_sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
@@ -31,6 +34,7 @@ bool UdpTransport::start() {
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     if (bind(m_sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+        Logger::error("Failed to bind UDP socket to port " + std::to_string(m_config.port));
         stop();
         return false;
     }
@@ -40,6 +44,7 @@ bool UdpTransport::start() {
     mreq.imr_multiaddr.s_addr = inet_addr(m_config.multicast_group.c_str());
     mreq.imr_interface.s_addr = inet_addr(m_config.local_interface.c_str());
     if (setsockopt(m_sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
+        Logger::error("Failed to join multicast group: " + m_config.multicast_group);
         stop();
         return false;
     }

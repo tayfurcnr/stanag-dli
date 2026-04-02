@@ -1,7 +1,7 @@
 #pragma once
 
-#include "DliHeader.hpp"
-#include "Checksum.hpp"
+#include <dli/protocol/DliHeader.hpp>
+#include <dli/core/Checksum.hpp>
 #include <optional>
 #include <vector>
 

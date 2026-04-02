@@ -113,5 +113,6 @@ class ICSGenerator:
         print(f"Generated: {out_path}")
 
 if __name__ == "__main__":
-    gen = ICSGenerator("/home/tayfurcnr/Desktop/STANAG/DLI")
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    gen = ICSGenerator(root)
     gen.generate_report()

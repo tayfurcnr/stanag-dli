@@ -157,7 +157,8 @@ class DLIGenerator:
         print(f"Generated: {out_path}")
 
 if __name__ == "__main__":
-    root_path = "/home/tayfurcnr/Desktop/STANAG/DLI"
+    # Dynamically find project root based on script location
+    root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     gen = DLIGenerator(root_path)
     msg_dir = os.path.join(root_path, "definitions/messages")
     for filename in os.listdir(msg_dir):

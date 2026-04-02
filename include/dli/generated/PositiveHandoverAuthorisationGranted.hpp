@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../BitCursor.hpp"
-#include "../Bam.hpp"
-#include "../Scaled.hpp"
+#include <dli/core/BitCursor.hpp>
+#include <dli/core/Bam.hpp>
+#include <dli/core/Scaled.hpp>
 #include <cstdint>
 
 namespace dli {

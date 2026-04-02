@@ -1,9 +1,10 @@
 #ifndef DLI_UDP_TRANSPORT_HPP
 #define DLI_UDP_TRANSPORT_HPP
 
-#include "TransportCapabilities.hpp"
-#include "IPackingPolicy.hpp"
-#include "../DliHeader.hpp"
+#include <dli/transport/ITransport.hpp>
+#include <dli/transport/TransportCapabilities.hpp>
+#include <dli/transport/IPackingPolicy.hpp>
+#include <dli/protocol/DliHeader.hpp>
 
 #include <string>
 #include <vector>
@@ -24,7 +25,7 @@ namespace dli {
  * Implements a non-blocking multicast adapter with throughput-optimized packing
  * and Message #32300-aware monitoring statistics.
  */
-class UdpTransport {
+class UdpTransport : public ITransport {
 public:
     using DataCallback = std::function<void(const uint8_t*, size_t)>;
 
