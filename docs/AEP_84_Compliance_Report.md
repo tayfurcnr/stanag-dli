@@ -27,6 +27,11 @@ The SDK strictly adheres to the following normative AEP-84 Volume II requirement
 - **Support for Message #32300**: Supports the "Data Link UDP Count" monitoring structure (rx_count is maintained in accordance with reporting semantics).
 - **Support for Message #32301**: Supports the "Universal Multicast Address Announcement" functionality.
 
+### 1.4. Message Library & Field Nomenclature
+- **Strict Nomenclature**: All 22+ core messages in the SDK have been aligned to use the **exact physical field names** defined in AEP-84 Volume II Section 4 tables (e.g., "Requested LOI", "Navigation Lights State", "U_Speed").
+- **Audit Fidelity**: This 1:1 mapping ensures that Interface Control Sheets (ICS) and generated code are "audit-proof," allowing direct cross-referencing with STANAG documentation without translation layers.
+- **Presence Vector Mapping**: PV bit-mapping for all messages has been physically verified against the standard's bit-level specifications to ensure bit-accurate interoperability.
+
 ---
 
 ## 2. Developer Implementation Policy (Decisions)

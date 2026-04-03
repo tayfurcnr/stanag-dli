@@ -3,6 +3,7 @@
 #include <dli/core/BitCursor.hpp>
 #include <dli/core/Bam.hpp>
 #include <dli/core/Scaled.hpp>
+#include <array>
 #include <cstdint>
 
 namespace dli {
@@ -21,114 +22,114 @@ public:
 
     uint32_t data_link_id;
 
-    uint32_t vehicle_type; // [enum]
+    uint16_t vehicle_type; // [enum]
 
-    uint32_t vehicle_subtype;
+    uint16_t vehicle_subtype;
 
-    uint32_t requested_handover_loi; // [Bitmapped]
+    uint8_t requested_handover_loi; // [Bitmapped]
 
-    uint32_t requested_handover_access; // [enum]
+    uint8_t requested_handover_access; // [enum]
 
-    uint32_t requested_flight_mode; // [enum]
+    uint8_t requested_flight_mode; // [enum]
 
-    uint32_t controlled_stn_1_16; // [Bitmapped]
+    uint16_t controlled_station_1_16; // [Bitmapped]
 
-    uint32_t component_number; // [Bitmapped]
+    uint16_t component_number; // [Bitmapped]
 
-    uint32_t sub_component_number; // [Bitmapped]
+    uint16_t sub_component_number; // [Bitmapped]
 
-    uint32_t payload_type; // [enum]
+    uint8_t payload_type; // [enum]
 
-    uint32_t asset_mode; // [enum]
+    uint8_t asset_mode; // [enum]
 
-    uint32_t wait_for_transition_coord; // [enum]
+    uint8_t wait_for_vehicle_data_link_transition_coordination_message; // [enum]
 
-    uint32_t cucs_type; // [enum]
+    uint8_t cucs_type; // [enum]
 
-    uint32_t cucs_subtype;
+    uint16_t cucs_subtype;
 
-    uint32_t presence_vector_support; // [enum]
+    uint8_t presence_vector_support; // [enum]
 
-    uint32_t controlled_stn_17_32; // [Bitmapped]
+    uint16_t controlled_station_17_32; // [Bitmapped]
 
 
     /**
      * @brief Serializes the message into the provided BitCursor.
      */
     void serialize(BitCursor& cursor) const {
-        uint32_t pv = 0;
+        uint64_t pv = 0;
         // Calculate Presence Vector (PV)
 
 
-        if (has_time_stamp) pv |= (1 << 0);
+        if (has_time_stamp) pv |= (uint64_t{1} << 0);
 
 
 
-        if (has_vsm_id) pv |= (1 << 1);
+        if (has_vsm_id) pv |= (uint64_t{1} << 1);
 
 
 
-        if (has_data_link_id) pv |= (1 << 2);
+        if (has_data_link_id) pv |= (uint64_t{1} << 2);
 
 
 
-        if (has_vehicle_type) pv |= (1 << 3);
+        if (has_vehicle_type) pv |= (uint64_t{1} << 3);
 
 
 
-        if (has_vehicle_subtype) pv |= (1 << 4);
+        if (has_vehicle_subtype) pv |= (uint64_t{1} << 4);
 
 
 
-        if (has_requested_handover_loi) pv |= (1 << 5);
+        if (has_requested_handover_loi) pv |= (uint64_t{1} << 5);
 
 
 
-        if (has_requested_handover_access) pv |= (1 << 6);
+        if (has_requested_handover_access) pv |= (uint64_t{1} << 6);
 
 
 
-        if (has_requested_flight_mode) pv |= (1 << 7);
+        if (has_requested_flight_mode) pv |= (uint64_t{1} << 7);
 
 
 
-        if (has_controlled_stn_1_16) pv |= (1 << 8);
+        if (has_controlled_station_1_16) pv |= (uint64_t{1} << 8);
 
 
 
-        if (has_component_number) pv |= (1 << 9);
+        if (has_component_number) pv |= (uint64_t{1} << 9);
 
 
 
-        if (has_sub_component_number) pv |= (1 << 10);
+        if (has_sub_component_number) pv |= (uint64_t{1} << 10);
 
 
 
-        if (has_payload_type) pv |= (1 << 11);
+        if (has_payload_type) pv |= (uint64_t{1} << 11);
 
 
 
-        if (has_asset_mode) pv |= (1 << 12);
+        if (has_asset_mode) pv |= (uint64_t{1} << 12);
 
 
 
-        if (has_wait_for_transition_coord) pv |= (1 << 13);
+        if (has_wait_for_vehicle_data_link_transition_coordination_message) pv |= (uint64_t{1} << 13);
 
 
 
-        if (has_cucs_type) pv |= (1 << 14);
+        if (has_cucs_type) pv |= (uint64_t{1} << 14);
 
 
 
-        if (has_cucs_subtype) pv |= (1 << 15);
+        if (has_cucs_subtype) pv |= (uint64_t{1} << 15);
 
 
 
-        if (has_presence_vector_support) pv |= (1 << 16);
+        if (has_presence_vector_support) pv |= (uint64_t{1} << 16);
 
 
 
-        if (has_controlled_stn_17_32) pv |= (1 << 17);
+        if (has_controlled_station_17_32) pv |= (uint64_t{1} << 17);
 
 
         
@@ -137,7 +138,7 @@ public:
         // Write Fields
 
 
-        if (pv & (1 << 0)) {
+        if (pv & (uint64_t{1} << 0)) {
 
             cursor.write_int(time_stamp, 5);
 
@@ -145,7 +146,7 @@ public:
 
 
 
-        if (pv & (1 << 1)) {
+        if (pv & (uint64_t{1} << 1)) {
 
             cursor.write(vsm_id);
 
@@ -153,7 +154,7 @@ public:
 
 
 
-        if (pv & (1 << 2)) {
+        if (pv & (uint64_t{1} << 2)) {
 
             cursor.write(data_link_id);
 
@@ -161,7 +162,7 @@ public:
 
 
 
-        if (pv & (1 << 3)) {
+        if (pv & (uint64_t{1} << 3)) {
 
             cursor.write(vehicle_type);
 
@@ -169,7 +170,7 @@ public:
 
 
 
-        if (pv & (1 << 4)) {
+        if (pv & (uint64_t{1} << 4)) {
 
             cursor.write(vehicle_subtype);
 
@@ -177,7 +178,7 @@ public:
 
 
 
-        if (pv & (1 << 5)) {
+        if (pv & (uint64_t{1} << 5)) {
 
             cursor.write(requested_handover_loi);
 
@@ -185,7 +186,7 @@ public:
 
 
 
-        if (pv & (1 << 6)) {
+        if (pv & (uint64_t{1} << 6)) {
 
             cursor.write(requested_handover_access);
 
@@ -193,7 +194,7 @@ public:
 
 
 
-        if (pv & (1 << 7)) {
+        if (pv & (uint64_t{1} << 7)) {
 
             cursor.write(requested_flight_mode);
 
@@ -201,15 +202,15 @@ public:
 
 
 
-        if (pv & (1 << 8)) {
+        if (pv & (uint64_t{1} << 8)) {
 
-            cursor.write(controlled_stn_1_16);
+            cursor.write(controlled_station_1_16);
 
         }
 
 
 
-        if (pv & (1 << 9)) {
+        if (pv & (uint64_t{1} << 9)) {
 
             cursor.write(component_number);
 
@@ -217,7 +218,7 @@ public:
 
 
 
-        if (pv & (1 << 10)) {
+        if (pv & (uint64_t{1} << 10)) {
 
             cursor.write(sub_component_number);
 
@@ -225,7 +226,7 @@ public:
 
 
 
-        if (pv & (1 << 11)) {
+        if (pv & (uint64_t{1} << 11)) {
 
             cursor.write(payload_type);
 
@@ -233,7 +234,7 @@ public:
 
 
 
-        if (pv & (1 << 12)) {
+        if (pv & (uint64_t{1} << 12)) {
 
             cursor.write(asset_mode);
 
@@ -241,15 +242,15 @@ public:
 
 
 
-        if (pv & (1 << 13)) {
+        if (pv & (uint64_t{1} << 13)) {
 
-            cursor.write(wait_for_transition_coord);
+            cursor.write(wait_for_vehicle_data_link_transition_coordination_message);
 
         }
 
 
 
-        if (pv & (1 << 14)) {
+        if (pv & (uint64_t{1} << 14)) {
 
             cursor.write(cucs_type);
 
@@ -257,7 +258,7 @@ public:
 
 
 
-        if (pv & (1 << 15)) {
+        if (pv & (uint64_t{1} << 15)) {
 
             cursor.write(cucs_subtype);
 
@@ -265,7 +266,7 @@ public:
 
 
 
-        if (pv & (1 << 16)) {
+        if (pv & (uint64_t{1} << 16)) {
 
             cursor.write(presence_vector_support);
 
@@ -273,9 +274,9 @@ public:
 
 
 
-        if (pv & (1 << 17)) {
+        if (pv & (uint64_t{1} << 17)) {
 
-            cursor.write(controlled_stn_17_32);
+            cursor.write(controlled_station_17_32);
 
         }
 
@@ -283,134 +284,134 @@ public:
     }
 
     void deserialize(BitCursor& cursor) {
-        uint32_t pv = 0;
+        uint64_t pv = 0;
         cursor.read_int(pv, 3);
 
         // Read Fields
 
 
-        if (pv & (1 << 0)) {
+        if (pv & (uint64_t{1} << 0)) {
             has_time_stamp = true;
             cursor.read_int(time_stamp, 5);
         }
 
 
 
-        if (pv & (1 << 1)) {
+        if (pv & (uint64_t{1} << 1)) {
             has_vsm_id = true;
             cursor.read(vsm_id);
         }
 
 
 
-        if (pv & (1 << 2)) {
+        if (pv & (uint64_t{1} << 2)) {
             has_data_link_id = true;
             cursor.read(data_link_id);
         }
 
 
 
-        if (pv & (1 << 3)) {
+        if (pv & (uint64_t{1} << 3)) {
             has_vehicle_type = true;
             cursor.read(vehicle_type);
         }
 
 
 
-        if (pv & (1 << 4)) {
+        if (pv & (uint64_t{1} << 4)) {
             has_vehicle_subtype = true;
             cursor.read(vehicle_subtype);
         }
 
 
 
-        if (pv & (1 << 5)) {
+        if (pv & (uint64_t{1} << 5)) {
             has_requested_handover_loi = true;
             cursor.read(requested_handover_loi);
         }
 
 
 
-        if (pv & (1 << 6)) {
+        if (pv & (uint64_t{1} << 6)) {
             has_requested_handover_access = true;
             cursor.read(requested_handover_access);
         }
 
 
 
-        if (pv & (1 << 7)) {
+        if (pv & (uint64_t{1} << 7)) {
             has_requested_flight_mode = true;
             cursor.read(requested_flight_mode);
         }
 
 
 
-        if (pv & (1 << 8)) {
-            has_controlled_stn_1_16 = true;
-            cursor.read(controlled_stn_1_16);
+        if (pv & (uint64_t{1} << 8)) {
+            has_controlled_station_1_16 = true;
+            cursor.read(controlled_station_1_16);
         }
 
 
 
-        if (pv & (1 << 9)) {
+        if (pv & (uint64_t{1} << 9)) {
             has_component_number = true;
             cursor.read(component_number);
         }
 
 
 
-        if (pv & (1 << 10)) {
+        if (pv & (uint64_t{1} << 10)) {
             has_sub_component_number = true;
             cursor.read(sub_component_number);
         }
 
 
 
-        if (pv & (1 << 11)) {
+        if (pv & (uint64_t{1} << 11)) {
             has_payload_type = true;
             cursor.read(payload_type);
         }
 
 
 
-        if (pv & (1 << 12)) {
+        if (pv & (uint64_t{1} << 12)) {
             has_asset_mode = true;
             cursor.read(asset_mode);
         }
 
 
 
-        if (pv & (1 << 13)) {
-            has_wait_for_transition_coord = true;
-            cursor.read(wait_for_transition_coord);
+        if (pv & (uint64_t{1} << 13)) {
+            has_wait_for_vehicle_data_link_transition_coordination_message = true;
+            cursor.read(wait_for_vehicle_data_link_transition_coordination_message);
         }
 
 
 
-        if (pv & (1 << 14)) {
+        if (pv & (uint64_t{1} << 14)) {
             has_cucs_type = true;
             cursor.read(cucs_type);
         }
 
 
 
-        if (pv & (1 << 15)) {
+        if (pv & (uint64_t{1} << 15)) {
             has_cucs_subtype = true;
             cursor.read(cucs_subtype);
         }
 
 
 
-        if (pv & (1 << 16)) {
+        if (pv & (uint64_t{1} << 16)) {
             has_presence_vector_support = true;
             cursor.read(presence_vector_support);
         }
 
 
 
-        if (pv & (1 << 17)) {
-            has_controlled_stn_17_32 = true;
-            cursor.read(controlled_stn_17_32);
+        if (pv & (uint64_t{1} << 17)) {
+            has_controlled_station_17_32 = true;
+            cursor.read(controlled_station_17_32);
         }
 
 
@@ -451,7 +452,7 @@ public:
 
 
 
-    bool has_controlled_stn_1_16 = false;
+    bool has_controlled_station_1_16 = false;
 
 
 
@@ -471,7 +472,7 @@ public:
 
 
 
-    bool has_wait_for_transition_coord = false;
+    bool has_wait_for_vehicle_data_link_transition_coordination_message = false;
 
 
 
@@ -487,7 +488,7 @@ public:
 
 
 
-    bool has_controlled_stn_17_32 = false;
+    bool has_controlled_station_17_32 = false;
 
 
 };

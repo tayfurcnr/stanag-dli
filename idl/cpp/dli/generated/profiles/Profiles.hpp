@@ -32,6 +32,8 @@ public:
         p.allow(3); // VehicleID (SystemID)
         p.allow(4); // PositiveHandoverAuthorisationRequest (SystemID)
         p.allow(5); // PositiveHandoverAuthorisationGranted (SystemID)
+        p.allow(3002); // VehicleOperatingStates (FlightVehicleStatus)
+        p.allow(3007); // EngineOperatingStates (FlightVehicleStatus)
         return p;
     }
 
@@ -42,6 +44,8 @@ public:
         p.allow(3); // VehicleID (SystemID)
         p.allow(4); // PositiveHandoverAuthorisationRequest (SystemID)
         p.allow(5); // PositiveHandoverAuthorisationGranted (SystemID)
+        p.allow(3002); // VehicleOperatingStates (FlightVehicleStatus)
+        p.allow(3007); // EngineOperatingStates (FlightVehicleStatus)
         p.allow(4000); // InertialStates (FlightVehiclePayloadRelevantStatus)
         p.allow(4001); // FromToNextWaypointStates (FlightVehiclePayloadRelevantStatus)
         return p;

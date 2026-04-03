@@ -3,6 +3,20 @@ import os
 import sys
 import re
 
+from validation import validate_message_definition, validate_types_definition
+
+CPP_SCALAR_TYPES = {
+    "uint8": {"cpp_type": "uint8_t", "bytes": 1},
+    "uint16": {"cpp_type": "uint16_t", "bytes": 2},
+    "uint24": {"cpp_type": "uint32_t", "bytes": 3},
+    "uint32": {"cpp_type": "uint32_t", "bytes": 4},
+    "uint40": {"cpp_type": "uint64_t", "bytes": 5},
+    "int8": {"cpp_type": "int8_t", "bytes": 1},
+    "int16": {"cpp_type": "int16_t", "bytes": 2},
+    "int24": {"cpp_type": "int32_t", "bytes": 3},
+    "int32": {"cpp_type": "int32_t", "bytes": 4},
+}
+
 # Simple Template Renderer (Jinja2-Lite)
 def render_template(template_str, context):
     # Handle loops: {% for item in items %} ... {% endfor %}
@@ -66,8 +80,60 @@ class DLIGenerator:
         self.root = root
         with open(os.path.join(root, "definitions/common/types.sdli"), 'r') as f:
             self.types = yaml.safe_load(f)['types']
+        validate_types_definition(self.types, os.path.join(root, "definitions/common/types.sdli"))
         with open(os.path.join(root, "definitions/common/policies.sdli"), 'r') as f:
             self.policies = yaml.safe_load(f)['policies']
+
+    def _sanitize_name(self, field_name):
+        safe_name = field_name.lower().replace(" ", "_").replace("&", "and").replace("-", "_").replace("(", "").replace(")", "").replace("/", "_")
+        if safe_name[0].isdigit():
+            safe_name = "f_" + safe_name
+        return safe_name
+
+    def _resolve_type_metadata(self, type_name):
+        if type_name in CPP_SCALAR_TYPES:
+            return {"kind": "scalar", **CPP_SCALAR_TYPES[type_name]}
+
+        type_def = self.types.get(type_name, {})
+        encoding = type_def.get("encoding")
+
+        if encoding == "bam":
+            return {
+                "kind": "bam",
+                "cpp_type": "double",
+                "storage": self._resolve_type_metadata(type_def["type"]),
+            }
+
+        if encoding == "scaled":
+            return {
+                "kind": "scaled",
+                "cpp_type": "double",
+                "storage": self._resolve_type_metadata(type_def["type"]),
+                "offset": type_def.get("offset", 0.0),
+                "scale": type_def["scale"],
+            }
+
+        if type_def.get("base") == "buffer":
+            return {
+                "kind": "buffer",
+                "cpp_type": f"std::array<uint8_t, {type_def['length']}>",
+                "length": type_def["length"],
+            }
+
+        if "type" in type_def:
+            return self._resolve_type_metadata(type_def["type"])
+
+        raise KeyError(f"Unsupported type metadata for '{type_name}'")
+
+    def _cpp_write_expr(self, var_name, storage):
+        if storage["bytes"] in (1, 2, 4):
+            return f"cursor.write({var_name});"
+        return f"cursor.write_int({var_name}, {storage['bytes']});"
+
+    def _cpp_read_expr(self, var_name, storage):
+        if storage["bytes"] in (1, 2, 4):
+            return f"cursor.read({var_name});"
+        return f"cursor.read_int({var_name}, {storage['bytes']});"
 
     def _resolve_fields(self, sdli_fields, start_pv_bit=None):
         resolved_fields = []
@@ -83,7 +149,9 @@ class DLIGenerator:
                 sub_fields = f_type_def.get('fields', [])
                 # Pass the current pv_bit to the sub-fields for expansion
                 # If field has a pv_bit, it's the start bit for the sub-fields
-                f_pv_bit = field.get('pv_bit') or current_pv_bit
+                f_pv_bit = field.get('pv_bit')
+                if f_pv_bit is None:
+                    f_pv_bit = current_pv_bit
                 resolved_fields.extend(self._resolve_fields(sub_fields, start_pv_bit=f_pv_bit))
                 
                 # Heuristic: Increment bit counter by length of sub-fields if we were tracking
@@ -91,36 +159,64 @@ class DLIGenerator:
                     current_pv_bit += len(sub_fields)
                 continue
 
-            # Type Mapping & Serialization Logic
-            cpp_type = "uint32_t"
             # Actual bit for this specific field
             f_bit = field.get('pv_bit')
             if f_bit is None and current_pv_bit is not None:
                 f_bit = current_pv_bit
                 current_pv_bit += 1
             
-            ser = f"cursor.write({f_name});"
-            deser = f"cursor.read({f_name});"
-            
-            if f_type_name == "Timestamp":
-                cpp_type = "uint64_t"
-                ser = f"cursor.write_int({f_name}, 5);"
-                deser = f"cursor.read_int({f_name}, 5);"
-            elif f_type_name == "BAM16":
+            safe_name = self._sanitize_name(f_name)
+            type_meta = self._resolve_type_metadata(f_type_name)
+            cpp_type = type_meta["cpp_type"]
+
+            if type_meta["kind"] == "scalar":
+                ser = self._cpp_write_expr(safe_name, type_meta)
+                deser = self._cpp_read_expr(safe_name, type_meta)
+            elif type_meta["kind"] == "bam":
+                storage = type_meta["storage"]
+                if storage["bytes"] == 2:
+                    ser = f"cursor.write(bam::to_bam16({safe_name}));"
+                    deser = f"uint16_t tmp_{safe_name}; cursor.read(tmp_{safe_name}); {safe_name} = bam::from_bam16(tmp_{safe_name});"
+                elif storage["bytes"] == 4:
+                    ser = f"cursor.write(bam::to_bam32({safe_name}));"
+                    deser = f"uint32_t tmp_{safe_name}; cursor.read(tmp_{safe_name}); {safe_name} = bam::from_bam32(tmp_{safe_name});"
+                else:
+                    raise ValueError(f"Unsupported BAM storage width for '{f_type_name}'")
+            elif type_meta["kind"] == "scaled":
+                storage = type_meta["storage"]
+                scaled_expr = f"scaled::to_scaled<{storage['cpp_type']}>({safe_name}, {type_meta['offset']}, {type_meta['scale']})"
+                if storage["bytes"] in (1, 2, 4):
+                    ser = f"cursor.write({scaled_expr});"
+                else:
+                    ser = f"cursor.write_int({scaled_expr}, {storage['bytes']});"
+                deser = (
+                    f"{storage['cpp_type']} tmp_{safe_name}; "
+                    f"{self._cpp_read_expr(f'tmp_{safe_name}', storage)} "
+                    f"{safe_name} = scaled::from_scaled<{storage['cpp_type']}, double>(tmp_{safe_name}, {type_meta['offset']}, {type_meta['scale']});"
+                )
+            elif type_meta["kind"] == "buffer":
+                ser = f"for (const auto& byte : {safe_name}) {{ cursor.write(byte); }}"
+                deser = f"for (auto& byte : {safe_name}) {{ cursor.read(byte); }}"
+            else:
+                raise ValueError(f"Unsupported type kind for '{f_type_name}'")
+
+            if field.get('scale') is not None:
+                storage = type_meta if type_meta["kind"] == "scalar" else type_meta["storage"]
                 cpp_type = "double"
-                ser = f"cursor.write(bam::to_bam16({f_name}));"
-                deser = f"uint16_t tmp_{f_name}; cursor.read(tmp_{f_name}); {f_name} = bam::from_bam16(tmp_{f_name});"
-            elif f_type_name == "BAM32":
-                cpp_type = "double"
-                ser = f"cursor.write(bam::to_bam32({f_name}));"
-                deser = f"uint32_t tmp_{f_name}; cursor.read(tmp_{f_name}); {f_name} = bam::from_bam32(tmp_{f_name});"
-            elif f_type_name == "Altitude":
-                cpp_type = "double"
-                ser = f"cursor.write(scaled::to_scaled<int32_t>({f_name}, 0.0, 0.01));"
-                deser = f"int32_t tmp_{f_name}; cursor.read(tmp_{f_name}); {f_name} = scaled::from_scaled<int32_t, double>(tmp_{f_name}, 0.0, 0.01);"
+                scaled_expr = f"scaled::to_scaled<{storage['cpp_type']}>({safe_name}, 0.0, {field['scale']})"
+                if storage["bytes"] in (1, 2, 4):
+                    ser = f"cursor.write({scaled_expr});"
+                else:
+                    ser = f"cursor.write_int({scaled_expr}, {storage['bytes']});"
+                deser = (
+                    f"{storage['cpp_type']} tmp_{safe_name}; "
+                    f"{self._cpp_read_expr(f'tmp_{safe_name}', storage)} "
+                    f"{safe_name} = scaled::from_scaled<{storage['cpp_type']}, double>(tmp_{safe_name}, 0.0, {field['scale']});"
+                )
 
             resolved_fields.append({
                 'name': f_name,
+                'safe_name': safe_name,
                 'cpp_type': cpp_type,
                 'pv_bit': f_bit,
                 'serialize_expr': ser,
@@ -132,6 +228,7 @@ class DLIGenerator:
     def generate_message(self, message_sdli_path):
         with open(message_sdli_path, 'r') as f:
             msg = yaml.safe_load(f)
+        validate_message_definition(msg, self.types, message_sdli_path)
         
         pv_info = msg['pv']
         pv_size = 4 

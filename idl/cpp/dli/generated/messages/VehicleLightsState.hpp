@@ -3,6 +3,7 @@
 #include <dli/core/BitCursor.hpp>
 #include <dli/core/Bam.hpp>
 #include <dli/core/Scaled.hpp>
+#include <array>
 #include <cstdint>
 
 namespace dli {
@@ -17,22 +18,22 @@ public:
 
     uint64_t time_stamp; // [ms]
 
-    uint32_t lights_state; // [Bitmapped]
+    uint16_t navigation_lights_state; // [Bitmapped]
 
 
     /**
      * @brief Serializes the message into the provided BitCursor.
      */
     void serialize(BitCursor& cursor) const {
-        uint32_t pv = 0;
+        uint64_t pv = 0;
         // Calculate Presence Vector (PV)
 
 
-        if (has_time_stamp) pv |= (1 << 0);
+        if (has_time_stamp) pv |= (uint64_t{1} << 0);
 
 
 
-        if (has_lights_state) pv |= (1 << 1);
+        if (has_navigation_lights_state) pv |= (uint64_t{1} << 1);
 
 
         
@@ -41,7 +42,7 @@ public:
         // Write Fields
 
 
-        if (pv & (1 << 0)) {
+        if (pv & (uint64_t{1} << 0)) {
 
             cursor.write_int(time_stamp, 5);
 
@@ -49,9 +50,9 @@ public:
 
 
 
-        if (pv & (1 << 1)) {
+        if (pv & (uint64_t{1} << 1)) {
 
-            cursor.write(lights_state);
+            cursor.write(navigation_lights_state);
 
         }
 
@@ -59,22 +60,22 @@ public:
     }
 
     void deserialize(BitCursor& cursor) {
-        uint32_t pv = 0;
+        uint64_t pv = 0;
         cursor.read_int(pv, 1);
 
         // Read Fields
 
 
-        if (pv & (1 << 0)) {
+        if (pv & (uint64_t{1} << 0)) {
             has_time_stamp = true;
             cursor.read_int(time_stamp, 5);
         }
 
 
 
-        if (pv & (1 << 1)) {
-            has_lights_state = true;
-            cursor.read(lights_state);
+        if (pv & (uint64_t{1} << 1)) {
+            has_navigation_lights_state = true;
+            cursor.read(navigation_lights_state);
         }
 
 
@@ -87,7 +88,7 @@ public:
 
 
 
-    bool has_lights_state = false;
+    bool has_navigation_lights_state = false;
 
 
 };

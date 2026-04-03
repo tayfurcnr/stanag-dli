@@ -1,0 +1,14 @@
+# Message #2000: Vehicle Configuration Command
+# Table 4-42, AEP-84 Vol II
+id: 2000
+name: VehicleConfigurationCommand
+group: VehicleControl
+source: CUCS
+direction: CUCS -> UA/VSM
+interaction: COMMAND
+latency: 1000ms
+pv: { size: 1, type: uint8 }
+fields:
+  - { name: "Time Stamp",                 pv_bit: 0,  type: Timestamp }
+  - { name: "Energy Storage Unit",        pv_bit: 1,  type: uint8 }
+  - { name: "Initial Propulsion Energy",  pv_bit: 2,  type: uint16, unit: "%", scale: 0.002 }

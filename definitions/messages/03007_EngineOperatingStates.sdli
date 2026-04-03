@@ -1,0 +1,48 @@
+# Message #3007: Engine Operating States
+# Table 4-63, AEP-84 Vol II (Standard Compliant - FULL)
+id: 3007
+name: EngineOperatingStates
+group: FlightVehicleStatus
+source: VSM
+direction: VSM -> CUCS
+interaction: REPORT
+latency: 500ms
+pv: { size: 5, type: uint40 }
+fields:
+  - { name: "Time Stamp",                 pv_bit: 0,  type: Timestamp }
+  - { name: "Engine Number",              pv_bit: 1,  type: uint16 } # Unsigned 2
+  - { name: "Engine Status",              pv_bit: 2,  type: uint8, unit: enum } # 0=Stopped, 1=Started, 2=Enabled/Running
+  - { name: "Reported Engine Command",     pv_bit: 3,  type: uint8, unit: enum } # 0=Stop, 1=Start, 2=Enable/Run
+  - { name: "Reverse Thrust Power Status", pv_bit: 4,  type: uint8, unit: enum } # 0=Off, 1=On, 2=Not Specified
+  - { name: "Reported Reverse Thrust",     pv_bit: 5,  type: uint8, unit: enum } # 0=Off-All, 1=On-All, 2=Auto-All
+  - { name: "Ignition Switch Power Status", pv_bit: 6,  type: uint8, unit: enum } # 0=Off, 1=On
+  - { name: "Ignition Switch Activation",   pv_bit: 7,  type: uint8, unit: enum } # 0=Off, 1=On
+  - { name: "Engine Power Setting",       pv_bit: 8,  type: uint16, unit: "%",   scale: 0.0017 }
+  - { name: "Engine Speed 1 Type",        pv_bit: 9,  type: uint8,  unit: enum }
+  - { name: "Engine Speed 1",             pv_bit: 10, type: uint16, unit: rad/s, scale: 0.5 }
+  - { name: "Engine Speed 2 Type",        pv_bit: 11, type: uint8,  unit: enum }
+  - { name: "Engine Speed 2",             pv_bit: 12, type: uint16, unit: rad/s, scale: 0.5 }
+  - { name: "Engine Speed 3 Type",        pv_bit: 13, type: uint8,  unit: enum }
+  - { name: "Engine Speed 3",             pv_bit: 14, type: uint16, unit: rad/s, scale: 0.5 }
+  - { name: "Propeller Pitch Angle",      pv_bit: 15, type: int8,   unit: rad,   scale: 0.02 } # Integer 1
+  - { name: "Output Power (Shaft Torque) Status", pv_bit: 16, type: uint8,  unit: enum } # Unsigned 1
+  - { name: "Engine Temperature 1 Type",  pv_bit: 17, type: uint8,  unit: enum }
+  - { name: "Engine Temperature 1",       pv_bit: 18, type: uint16, unit: K,     scale: 0.5 } # Unsigned 2
+  - { name: "Engine Temperature 2 Type",  pv_bit: 19, type: uint8,  unit: enum }
+  - { name: "Engine Temperature 2",       pv_bit: 20, type: uint16, unit: K,     scale: 0.5 }
+  - { name: "Engine Temperature 3 Type",  pv_bit: 21, type: uint8,  unit: enum }
+  - { name: "Engine Temperature 3",       pv_bit: 22, type: uint16, unit: K,     scale: 0.5 }
+  - { name: "Engine Temperature 4 Type",  pv_bit: 23, type: uint8,  unit: enum }
+  - { name: "Engine Temperature 4",       pv_bit: 24, type: uint16, unit: K,     scale: 0.5 }
+  - { name: "Engine Pressure 1 Type",     pv_bit: 25, type: uint8,  unit: enum }
+  - { name: "Engine Pressure 1",          pv_bit: 26, type: uint16, unit: Pa,    scale: 10.0 } # Unsigned 2
+  - { name: "Engine Pressure 1 Status",   pv_bit: 27, type: uint8,  unit: enum }
+  - { name: "Engine Pressure 2 Type",     pv_bit: 28, type: uint8,  unit: enum }
+  - { name: "Engine Pressure 2",          pv_bit: 29, type: uint16, unit: Pa,    scale: 10.0 }
+  - { name: "Engine Pressure 2 Status",   pv_bit: 30, type: uint8,  unit: enum }
+  - { name: "Fire Detection Sensor Status", pv_bit: 31, type: uint8, unit: enum }
+  - { name: "Engine Energy Flow",         pv_bit: 32, type: uint24, unit: "%/s", scale: 0.0017 } # Unsigned 3
+  - { name: "Engine Body Temperature Status", pv_bit: 33, type: uint8,  unit: enum }
+  - { name: "Exhaust Gas Temperature Status", pv_bit: 34, type: uint8,  unit: enum }
+  - { name: "Coolant Temperature Status", pv_bit: 35, type: uint8,  unit: enum }
+  - { name: "Lubricant Temperature Status", pv_bit: 36, type: uint8,  unit: enum }

@@ -3,6 +3,7 @@
 #include <dli/core/BitCursor.hpp>
 #include <dli/core/Bam.hpp>
 #include <dli/core/Scaled.hpp>
+#include <array>
 #include <cstdint>
 
 namespace dli {
@@ -22,11 +23,11 @@ public:
      * @brief Serializes the message into the provided BitCursor.
      */
     void serialize(BitCursor& cursor) const {
-        uint32_t pv = 0;
+        uint64_t pv = 0;
         // Calculate Presence Vector (PV)
 
 
-        if (has_time_stamp) pv |= (1 << 0);
+        if (has_time_stamp) pv |= (uint64_t{1} << 0);
 
 
         
@@ -35,7 +36,7 @@ public:
         // Write Fields
 
 
-        if (pv & (1 << 0)) {
+        if (pv & (uint64_t{1} << 0)) {
 
             cursor.write_int(time_stamp, 5);
 
@@ -45,13 +46,13 @@ public:
     }
 
     void deserialize(BitCursor& cursor) {
-        uint32_t pv = 0;
+        uint64_t pv = 0;
         cursor.read_int(pv, 1);
 
         // Read Fields
 
 
-        if (pv & (1 << 0)) {
+        if (pv & (uint64_t{1} << 0)) {
             has_time_stamp = true;
             cursor.read_int(time_stamp, 5);
         }

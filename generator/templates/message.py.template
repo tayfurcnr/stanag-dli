@@ -1,0 +1,70 @@
+from dli.core.bit_cursor import BitCursor
+from dli.utils import BAM, Scaled
+import math
+
+class {{ name }}:
+    def __init__(self):
+        # Presence Vector
+        self.pv = 0
+        {% for field in fields %}
+        self.{{ field.safe_name }} = {{ field.default_val }}
+        self.has_{{ field.safe_name }} = False
+        {% endfor %}
+
+    def serialize(self, cursor: BitCursor):
+        # 1. Prepare PV
+        self.pv = 0
+        {% for field in fields %}
+        if self.has_{{ field.safe_name }}:
+            self.pv |= (1 << {{ field.pv_bit }})
+        {% endfor %}
+
+        # 2. Write PV
+        {% if pv_size == 1 %}
+        cursor.write_uint8(self.pv)
+        {% endif %}
+        {% if pv_size == 2 %}
+        cursor.write_uint16(self.pv)
+        {% endif %}
+        {% if pv_size == 3 %}
+        cursor.write_uint24(self.pv)
+        {% endif %}
+        {% if pv_size == 4 %}
+        cursor.write_uint32(self.pv)
+        {% endif %}
+        {% if pv_size == 5 %}
+        cursor.write_uint40(self.pv)
+        {% endif %}
+
+        # 3. Write Fields
+        {% for field in fields %}
+        if self.has_{{ field.safe_name }}:
+            {{ field.serialize_expr }}
+        {% endfor %}
+
+    def deserialize(self, cursor: BitCursor):
+        # 1. Read PV
+        {% if pv_size == 1 %}
+        self.pv = cursor.read_uint8()
+        {% endif %}
+        {% if pv_size == 2 %}
+        self.pv = cursor.read_uint16()
+        {% endif %}
+        {% if pv_size == 3 %}
+        self.pv = cursor.read_uint24()
+        {% endif %}
+        {% if pv_size == 4 %}
+        self.pv = cursor.read_uint32()
+        {% endif %}
+        {% if pv_size == 5 %}
+        self.pv = cursor.read_uint40()
+        {% endif %}
+
+        # 2. Read Fields
+        {% for field in fields %}
+        if self.pv & (1 << {{ field.pv_bit }}):
+            self.has_{{ field.safe_name }} = True
+            {{ field.deserialize_expr }}
+        else:
+            self.has_{{ field.safe_name }} = False
+        {% endfor %}

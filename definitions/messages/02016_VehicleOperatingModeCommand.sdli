@@ -9,26 +9,26 @@ interaction: COMMAND
 latency: 100ms
 pv: { size: 3, type: uint24 }
 fields:
-  - { name: time_stamp,           pv_bit: 0,  type: Timestamp }
-  - { name: flight_path_control_mode, pv_bit: 1, type: uint8, unit: enum }
-  - { name: altitude_command_type, pv_bit: 2, type: uint8, unit: enum }
-  - { name: commanded_altitude,   pv_bit: 3,  type: int24, unit: m, scale: 0.02 } # Altitude
-  - { name: commanded_vertical_speed, pv_bit: 4, type: int16, unit: m/s, scale: 0.05 }
-  - { name: heading_command_type,  pv_bit: 5,  type: uint8, unit: enum }
-  - { name: heading_reference,     pv_bit: 6,  type: uint8, unit: enum }
-  - { name: commanded_heading,     pv_bit: 7,  type: BAM16, unit: rad }
-  - { name: commanded_course,      pv_bit: 8,  type: BAM16, unit: rad }
-  - { name: commanded_turn_rate,   pv_bit: 9,  type: int16, unit: rad/s, scale: 0.005 }
-  - { name: commanded_roll_rate,   pv_bit: 10, type: int16, unit: rad/s, scale: 0.005 }
-  - { name: commanded_roll,        pv_bit: 11, type: BAM16, unit: rad }
-  - { name: commanded_speed,       pv_bit: 12, type: uint16, unit: m/s, scale: 0.5 }
-  - { name: speed_type,            pv_bit: 13, type: uint8, unit: enum }
-  - { name: commanded_waypoint_number, pv_bit: 14, type: uint16 }
-  - { name: altimeter_setting,     pv_bit: 15, type: uint16, unit: Pa, scale: 10.0 }
-  - { name: altitude_type,         pv_bit: 16, type: uint8, unit: enum }
-  - { name: loiter_latitude,       pv_bit: 17, type: BAM32, unit: rad }
-  - { name: loiter_longitude,      pv_bit: 18, type: BAM32, unit: rad }
-  - { name: loiter_altitude_change, pv_bit: 19, type: uint8, unit: enum }
-  - { name: thrust_direction,      pv_bit: 20, type: BAM16, unit: rad }
-  - { name: thrust,                pv_bit: 21, type: uint8, unit: "%" }
-  - { name: activity_id,           pv_bit: 22, type: uint24 }
+  - { name: "Time Stamp",                 pv_bit: 0,  type: Timestamp }
+  - { name: "Select Flight Path Control Mode", pv_bit: 1, type: uint8, unit: enum }
+  - { name: "Altitude Command Type",      pv_bit: 2,  type: uint8, unit: enum }
+  - { name: "Commanded Altitude",         pv_bit: 3,  type: int24, unit: m, scale: 0.02 }
+  - { name: "Commanded Vertical Speed",    pv_bit: 4,  type: int16, unit: m/s, scale: 0.05 }
+  - { name: "Heading Command Type",       pv_bit: 5,  type: uint8, unit: enum }
+  - { name: "Heading Reference",          pv_bit: 6,  type: uint8, unit: enum }
+  - { name: "Commanded Heading",          pv_bit: 7,  type: BAM16, unit: rad }
+  - { name: "Commanded Course",           pv_bit: 8,  type: BAM16, unit: rad }
+  - { name: "Commanded Turn Rate",        pv_bit: 9,  type: int16, unit: rad/s, scale: 0.005 }
+  - { name: "Commanded Roll Rate",        pv_bit: 10, type: int16, unit: rad/s, scale: 0.005 }
+  - { name: "Commanded Roll",             pv_bit: 11, type: BAM16, unit: rad }
+  - { name: "Commanded Speed",            pv_bit: 12, type: uint16, unit: m/s, scale: 0.5 }
+  - { name: "Speed Type",                 pv_bit: 13, type: uint8, unit: enum }
+  - { name: "Commanded Waypoint Number",  pv_bit: 14, type: uint16 }
+  - { name: "Altimeter Setting",          pv_bit: 15, type: uint16, unit: Pa, scale: 10.0 }
+  - { name: "Altitude Type",              pv_bit: 16, type: uint8, unit: enum }
+  - { name: "Loiter Position Latitude",   pv_bit: 17, type: BAM32, unit: rad }
+  - { name: "Loiter Position Longitude",  pv_bit: 18, type: BAM32, unit: rad }
+  - { name: "Loiter Altitude Change Behaviour", pv_bit: 19, type: uint8, unit: enum }
+  - { name: "Thrust Direction",           pv_bit: 20, type: BAM16, unit: rad }
+  - { name: "Thrust",                     pv_bit: 21, type: uint8, unit: "%" }
+  - { name: "Activity ID",                pv_bit: 22, type: uint24 }

@@ -9,22 +9,22 @@ interaction: RESPONSE
 latency: 1000ms
 pv: { size: 3, type: uint24 }
 fields:
-  - { name: time_stamp,           pv_bit: 0,  type: Timestamp }
-  - { name: vsm_id,               pv_bit: 1,  type: uint32 }
-  - { name: data_link_id,         pv_bit: 2,  type: uint32 }
-  - { name: access_authorized,    pv_bit: 3,  type: uint8, unit: enum }
-  - { name: access_granted,       pv_bit: 4,  type: uint8, unit: enum }
-  - { name: loi_authorized,       pv_bit: 5,  type: uint8, unit: Bitmapped }
-  - { name: loi_granted,          pv_bit: 6,  type: uint8, unit: Bitmapped }
-  - { name: flight_modes_granted, pv_bit: 7,  type: uint32, unit: Bitmapped } # Unsigned 4
-  - { name: controlled_stn_1_16,  pv_bit: 8,  type: uint16, unit: Bitmapped }
-  - { name: component_number,     pv_bit: 9,  type: uint16, unit: Bitmapped }
-  - { name: sub_component_number, pv_bit: 10, type: uint16, unit: Bitmapped }
-  - { name: payload_type,         pv_bit: 11, type: uint8, unit: enum }
-  - { name: access_requested,     pv_bit: 12, type: uint8, unit: Bitmapped }
-  - { name: vehicle_type,         pv_bit: 13, type: uint16, unit: enum } # Unsigned 2
-  - { name: vehicle_subtype,      pv_bit: 14, type: uint16 }            # Unsigned 2
-  - { name: cucs_type,            pv_bit: 15, type: uint8, unit: enum } # Unsigned 1
-  - { name: cucs_subtype,         pv_bit: 16, type: uint8 }            # Unsigned 1
-  - { name: presence_vector_support, pv_bit: 17, type: uint8, unit: enum }
-  - { name: controlled_stn_17_32, pv_bit: 18, type: uint16, unit: Bitmapped }
+  - { name: "Time Stamp",           pv_bit: 0,  type: Timestamp }
+  - { name: "VSM ID",               pv_bit: 1,  type: uint32 }
+  - { name: "Data Link ID",         pv_bit: 2,  type: uint32 }
+  - { name: "Access Authorized",    pv_bit: 3,  type: uint8, unit: enum }
+  - { name: "Access Granted",       pv_bit: 4,  type: uint8, unit: enum }
+  - { name: "LOI Authorized",       pv_bit: 5,  type: uint8, unit: Bitmapped }
+  - { name: "LOI Granted",          pv_bit: 6,  type: uint8, unit: Bitmapped }
+  - { name: "Flight Modes Granted", pv_bit: 7,  type: uint8, unit: enum }
+  - { name: "Controlled Station 1-16", pv_bit: 8,  type: uint16, unit: Bitmapped }
+  - { name: "Component Number",      pv_bit: 9,  type: uint16, unit: Bitmapped }
+  - { name: "Sub-Component Number",  pv_bit: 10, type: uint16, unit: Bitmapped }
+  - { name: "Payload Type",          pv_bit: 11, type: uint8,  unit: enum }
+  - { name: "Access Requested",      pv_bit: 12, type: uint8,  unit: Bitmapped }
+  - { name: "Vehicle Type",          pv_bit: 13, type: uint16, unit: enum }
+  - { name: "Vehicle Subtype",       pv_bit: 14, type: uint16 }
+  - { name: "CUCS Type",             pv_bit: 15, type: uint8,  unit: enum }
+  - { name: "CUCS Subtype",          pv_bit: 16, type: uint16 }
+  - { name: "Presence Vector Support", pv_bit: 17, type: uint8, unit: enum }
+  - { name: "Controlled Station 17-32", pv_bit: 18, type: uint16, unit: Bitmapped }

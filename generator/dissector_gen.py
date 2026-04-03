@@ -21,26 +21,36 @@ class DissectorGenerator:
         return messages
 
     def get_field_info(self, type_name):
-        if type_name in ["uint8", "int8"]: return 1, "uint8"
-        if type_name in ["uint16", "int16"]: return 2, "uint16"
-        if type_name in ["uint32", "int32"]: return 4, "uint32"
-        if type_name in ["uint64", "int64"]: return 8, "uint64"
-        if type_name == "float": return 4, "float"
-        if type_name == "double": return 8, "double"
-        
+        scalar_types = {
+            "uint8": {"size": 1, "signed": False, "ws_type": "uint8"},
+            "uint16": {"size": 2, "signed": False, "ws_type": "uint16"},
+            "uint24": {"size": 3, "signed": False, "ws_type": "uint32"},
+            "uint32": {"size": 4, "signed": False, "ws_type": "uint32"},
+            "uint40": {"size": 5, "signed": False, "ws_type": "uint64"},
+            "int8": {"size": 1, "signed": True, "ws_type": "int8"},
+            "int16": {"size": 2, "signed": True, "ws_type": "int16"},
+            "int24": {"size": 3, "signed": True, "ws_type": "int32"},
+            "int32": {"size": 4, "signed": True, "ws_type": "int32"},
+        }
+        if type_name in scalar_types:
+            return scalar_types[type_name]
+
         t_def = self.types.get(type_name, {})
-        if not t_def: return 4, "uint32"
+        if not t_def:
+            raise KeyError(f"Unsupported dissector type '{type_name}'")
 
-        if 'length' in t_def: return t_def['length'], "string"
-        if 'size' in t_def:
-            size = t_def['size']
-            if size <= 1: return 1, "uint8"
-            if size <= 2: return 2, "uint16"
-            if size <= 4: return 4, "uint32"
-            return size, "uint64"
+        if t_def.get("base") == "buffer":
+            return {"size": t_def["length"], "signed": False, "ws_type": "string"}
 
-        if 'type' in t_def: return self.get_field_info(t_def['type'])
-        return 4, "uint32"
+        if "size" in t_def:
+            size = t_def["size"]
+            ws_type = "uint8" if size == 1 else "uint16" if size == 2 else "uint32" if size <= 4 else "uint64"
+            return {"size": size, "signed": False, "ws_type": ws_type}
+
+        if "type" in t_def:
+            return self.get_field_info(t_def["type"])
+
+        raise KeyError(f"Unsupported dissector type metadata for '{type_name}'")
 
     def generate(self):
         lua = []
@@ -59,6 +69,23 @@ class DissectorGenerator:
 
         lua.append("function decode_scaled(val, scale, offset)")
         lua.append("    return (val * scale) + offset")
+        lua.append("end\n")
+
+        lua.append("function read_uint_be(buffer, offset, size)")
+        lua.append("    local value = 0")
+        lua.append("    for i = 0, size - 1 do")
+        lua.append("        value = value * 256 + buffer(offset + i, 1):uint()")
+        lua.append("    end")
+        lua.append("    return value")
+        lua.append("end\n")
+
+        lua.append("function read_int_be(buffer, offset, size)")
+        lua.append("    local value = read_uint_be(buffer, offset, size)")
+        lua.append("    local sign_bit = math.pow(2, size * 8 - 1)")
+        lua.append("    if value >= sign_bit then")
+        lua.append("        value = value - math.pow(2, size * 8)")
+        lua.append("    end")
+        lua.append("    return value")
         lua.append("end\n")
 
         lua.append("local f = dli_proto.fields")
@@ -102,7 +129,7 @@ class DissectorGenerator:
             lua.append(f"            pinfo.cols.info = '{msg['name']}'")
             
             pv_size = msg.get('pv', {}).get('size', 4)
-            lua.append(f"            local pv = buffer(offset, {pv_size}):uint()")
+            lua.append(f"            local pv = read_uint_be(buffer, offset, {pv_size})")
             lua.append(f"            pay_tree:add(buffer(offset, {pv_size}), 'Presence Vector: ' .. string.format('0x%X', pv))")
             lua.append(f"            offset = offset + {pv_size}\n")
             
@@ -130,10 +157,10 @@ class DissectorGenerator:
                 comp_def = self.types.get(ftype, {})
                 self._gen_field_defs(comp_def['fields'], f"{prefix}_{name}", lua)
                 continue
-            size, ws_type = self.get_field_info(ftype)
-            lua_ws_type = "uint32" if ws_type == "uint24" else ws_type
+            type_info = self.get_field_info(ftype)
+            lua_ws_type = type_info["ws_type"]
             
-            base_display = "base.ASCII" if ws_type == "string" else "base.DEC"
+            base_display = "base.ASCII" if lua_ws_type == "string" else "base.DEC"
             lua.append(f"f.{prefix}_{name} = ProtoField.{lua_ws_type}('dli.{prefix}.{name}', '{name}', {base_display})")
 
     def _gen_dissection_logic(self, fields, prefix, lua):
@@ -147,7 +174,8 @@ class DissectorGenerator:
                 self._gen_dissection_logic(comp_def['fields'], f"{prefix}_{name}", lua)
                 continue
 
-            size, _ = self.get_field_info(ftype)
+            type_info = self.get_field_info(ftype)
+            size = type_info["size"]
             indent = "            "
             if pv_bit is not None:
                 lua.append(f"{indent}if bit.band(pv, bit.lshift(1, {pv_bit})) ~= 0 then")
@@ -157,13 +185,14 @@ class DissectorGenerator:
             # Field addition with engineering decoding
             if t_def.get('encoding') == 'bam':
                 low, high = t_def['range']
-                lua.append(f"{indent}local raw = buffer(offset, {size}):uint()")
+                lua.append(f"{indent}local raw = read_uint_be(buffer, offset, {size})")
                 lua.append(f"{indent}local eng = decode_bam(raw, {size*8}, {low}, {high})")
                 lua.append(f"{indent}pay_tree:add(f.{prefix}_{name}, buffer(offset, {size})):append_text(string.format(' (Eng: %.6f)', eng))")
             elif t_def.get('encoding') == 'scaled':
                 scale = t_def['scale']
                 offset = t_def.get('offset', 0.0)
-                lua.append(f"{indent}local raw = buffer(offset, {size}):int()")
+                read_fn = "read_int_be" if type_info["signed"] else "read_uint_be"
+                lua.append(f"{indent}local raw = {read_fn}(buffer, offset, {size})")
                 lua.append(f"{indent}local eng = decode_scaled(raw, {scale}, {offset})")
                 lua.append(f"{indent}pay_tree:add(f.{prefix}_{name}, buffer(offset, {size})):append_text(string.format(' (Eng: %.3f %s)', eng, '{t_def.get('unit', '')}'))")
             else:

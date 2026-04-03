@@ -1,12 +1,29 @@
+# Build & Artifacts
 build/
+bin/
+Testing/
+.pytest_cache/
+.codex/
 *.o
 *.out
 *.log
+*.elf
+*.exe
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# IDEs
+.vscode/
+.idea/
+.project
+.settings/
+.cproject
+
+# Specific DLI Tests (Legacy Root)
 session_test
 protocol_test
 test_output*.txt
 test_crc_output.txt
-__pycache__/
-*.pyc
-.vscode/
-

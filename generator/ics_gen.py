@@ -2,30 +2,62 @@ import yaml
 import os
 import sys
 
+from validation import validate_message_definition, validate_types_definition
+
+
+ICS_SCALAR_TYPES = {
+    "uint8": {"length": 1, "encoding": "uint8"},
+    "uint16": {"length": 2, "encoding": "uint16"},
+    "uint24": {"length": 3, "encoding": "uint24"},
+    "uint32": {"length": 4, "encoding": "uint32"},
+    "uint40": {"length": 5, "encoding": "uint40"},
+    "int8": {"length": 1, "encoding": "int8"},
+    "int16": {"length": 2, "encoding": "int16"},
+    "int24": {"length": 3, "encoding": "int24"},
+    "int32": {"length": 4, "encoding": "int32"},
+}
+
+
 class ICSGenerator:
     def __init__(self, root):
         self.root = root
         with open(os.path.join(root, "definitions/common/types.sdli"), 'r') as f:
             self.types = yaml.safe_load(f)['types']
+        validate_types_definition(self.types, os.path.join(root, "definitions/common/types.sdli"))
         self.messages_dir = os.path.join(root, "definitions/messages")
         self.profiles_dir = os.path.join(root, "definitions/profiles")
 
-    def _get_type_info(self, t_name):
+    def _resolve_type_info(self, t_name):
+        if t_name in ICS_SCALAR_TYPES:
+            return ICS_SCALAR_TYPES[t_name]
+
         t_def = self.types.get(t_name, {})
-        length = 1 # Default
-        encoding = t_name
-        
-        if t_name == "Timestamp": length = 5; encoding = "uint40 (Scaled 1ms)"
-        elif t_name == "BAM16": length = 2; encoding = "BAM16"
-        elif t_name == "BAM32": length = 4; encoding = "BAM32"
-        elif t_name == "Altitude": length = 3; encoding = "int24 (Scaled 0.02m)"
-        elif t_name == "uint32": length = 4; encoding = "uint32"
-        elif t_name == "uint16": length = 2; encoding = "uint16"
-        elif t_name == "uint8": length = 1; encoding = "uint8"
-        elif t_name == "int16": length = 2; encoding = "int16"
-        else: length = t_def.get('length', 1)
-        
-        return length, encoding
+        encoding = t_def.get("encoding")
+
+        if encoding == "bam":
+            storage = self._resolve_type_info(t_def["type"])
+            return {
+                "length": storage["length"],
+                "encoding": f"{t_name} ({storage['encoding']})",
+            }
+
+        if encoding == "scaled":
+            storage = self._resolve_type_info(t_def["type"])
+            return {
+                "length": storage["length"],
+                "encoding": f"{storage['encoding']} (Scaled offset={t_def.get('offset', 0.0)}, scale={t_def['scale']})",
+            }
+
+        if t_def.get("base") == "buffer":
+            return {
+                "length": t_def["length"],
+                "encoding": f"buffer[{t_def['length']}]",
+            }
+
+        if "type" in t_def:
+            return self._resolve_type_info(t_def["type"])
+
+        raise KeyError(f"Unsupported ICS type metadata for '{t_name}'")
 
     def _resolve_fields_for_ics(self, sdli_fields, start_pv_bit=None):
         resolved = []
@@ -36,7 +68,9 @@ class ICSGenerator:
             f_type_def = self.types.get(f_type_name, {})
             if field.get('composition') == 'flattened' or f_type_def.get('composition') == 'flattened':
                 sub_fields = f_type_def.get('fields', [])
-                f_pv_bit = field.get('pv_bit') or current_pv_bit
+                f_pv_bit = field.get('pv_bit')
+                if f_pv_bit is None:
+                    f_pv_bit = current_pv_bit
                 resolved.extend(self._resolve_fields_for_ics(sub_fields, start_pv_bit=f_pv_bit))
                 if current_pv_bit is not None: current_pv_bit += len(sub_fields)
                 continue
@@ -45,10 +79,13 @@ class ICSGenerator:
             if f_bit is None and current_pv_bit is not None:
                 f_bit = current_pv_bit
                 current_pv_bit += 1
-            length, encoding = self._get_type_info(f_type_name)
+            type_info = self._resolve_type_info(f_type_name)
+            encoding = type_info["encoding"]
+            if field.get("scale") is not None:
+                encoding = f"{encoding} (Field scale={field['scale']})"
             resolved.append({
                 'name': f_name, 'pv_bit': f_bit, 'type': f_type_name,
-                'length': length, 'encoding': encoding,
+                'length': type_info["length"], 'encoding': encoding,
                 'unit': field.get('unit') or f_type_def.get('unit', '-'),
                 'mandatory': 'M' if f_bit is None else 'O'
             })
@@ -58,13 +95,14 @@ class ICSGenerator:
         print("[ICS] Generating High-Fidelity Audit-Friendly ICS...")
         report = "# DLI Interface Control Sheet (ICS) - v1.0 (Draft Aligned to STANAG 4586)\n\n"
         report += "> [!IMPORTANT]\n"
-        report += "> This document is a framework-generated ICS draft aligned to STANAG 4586. All PV bits are sequential LSB 0.\n\n"
+        report += "> This document is a framework-generated ICS draft aligned to STANAG 4586. Presence vector sizes, field widths, and encodings are derived from the SDLI definitions.\n\n"
         
         messages = []
         for filename in sorted(os.listdir(self.messages_dir)):
             if not filename.endswith(".sdli"): continue
             with open(os.path.join(self.messages_dir, filename), 'r') as f:
                 msg = yaml.safe_load(f)
+                validate_message_definition(msg, self.types, os.path.join(self.messages_dir, filename))
                 msg['resolved_fields'] = self._resolve_fields_for_ics(msg['fields'])
                 messages.append(msg)
         
@@ -93,8 +131,8 @@ class ICSGenerator:
             if not filename.endswith(".profile"): continue
             with open(os.path.join(self.profiles_dir, filename), 'r') as f:
                 prof = yaml.safe_load(f)
-                report += f"### Profile: {prof['name']} (LOI {prof['loi']})\n"
-                report += f"**Mode:** {prof['mode']}\n"
+                report += f"### Profile: {prof['name']} (LOI {prof.get('loi', '-')})\n"
+                report += f"**Mode:** {prof.get('mode', '-')}\n"
                 # Check for the tailored note in comments or metadata
                 report += "**Included Groups:** " + ", ".join(prof.get('include_groups', [])) + "\n"
                 if prof.get('optional_groups'):

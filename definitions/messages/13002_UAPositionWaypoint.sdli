@@ -9,20 +9,21 @@ interaction: PUSH/REQUEST
 latency: 1000ms
 pv: { size: 3, type: uint24 }
 fields:
-  - { name: time_stamp,           pv_bit: 0,  type: Timestamp }
-  - { name: waypoint_number,      pv_bit: 1,  type: uint16 }
-  - { name: waypoint_latitude,    pv_bit: 2,  type: BAM32, unit: rad }
-  - { name: waypoint_longitude,   pv_bit: 3,  type: BAM32, unit: rad }
-  - { name: location_type,        pv_bit: 4,  type: uint8, unit: enum }
-  - { name: waypoint_altitude,    pv_bit: 5,  type: int24, unit: m, scale: 0.02 }
-  - { name: altitude_type,         pv_bit: 6,  type: uint8, unit: enum }
-  - { name: altitude_change,       pv_bit: 7,  type: uint8, unit: enum }
-  - { name: waypoint_speed,       pv_bit: 8,  type: uint16, unit: m/s, scale: 0.5 }
-  - { name: speed_type,            pv_bit: 9,  type: uint8, unit: enum }
-  - { name: next_waypoint,        pv_bit: 10, type: uint16 }
-  - { name: turn_type,            pv_bit: 11, type: uint8, unit: enum }
-  - { name: optional_messages,    pv_bit: 12, type: uint8, unit: Bitmapped }
-  - { name: waypoint_type,        pv_bit: 13, type: uint8, unit: enum }
-  - { name: limit_type,           pv_bit: 14, type: uint8, unit: enum }
-  - { name: loop_limit,           pv_bit: 15, type: uint16 } # Matches s/Fuel/Num by limit_type
-  - { name: activity_id,           pv_bit: 16, type: uint24 }
+  - { name: "Time Stamp",                 pv_bit: 0,  type: Timestamp }
+  - { name: "Waypoint Number",            pv_bit: 1,  type: uint16 }
+  - { name: "Waypoint to Latitude or Relative Y",  pv_bit: 2,  type: BAM32, unit: rad }
+  - { name: "Waypoint to Longitude or Relative X", pv_bit: 3,  type: BAM32, unit: rad }
+  - { name: "Location Type",              pv_bit: 4,  type: uint8,  unit: enum }
+  - { name: "Waypoint to Altitude",       pv_bit: 5,  type: int24, unit: m, scale: 0.02 }
+  - { name: "Waypoint Altitude Type",     pv_bit: 6,  type: uint8,  unit: enum }
+  - { name: "Altitude Change Behaviour",  pv_bit: 7,  type: uint8,  unit: enum }
+  - { name: "Waypoint to Speed",          pv_bit: 8,  type: uint16, unit: m/s, scale: 0.5 }
+  - { name: "Waypoint Speed Type",        pv_bit: 9,  type: uint8,  unit: enum }
+  - { name: "Next Waypoint",              pv_bit: 10, type: uint16 }
+  - { name: "Turn Type",                  pv_bit: 11, type: uint8,  unit: enum }
+  - { name: "Optional Messages for Waypoint", pv_bit: 12, type: uint8, unit: Bitmapped }
+  - { name: "Waypoint Type",              pv_bit: 13, type: uint8,  unit: enum }
+  - { name: "Limit Type",                 pv_bit: 14, type: uint8,  unit: enum }
+  - { name: "Loop Limit",                 pv_bit: 15, type: uint16 }
+  - { name: "Arrival Time",               pv_bit: 16, type: Timestamp }
+  - { name: "Activity ID",                pv_bit: 17, type: uint24 }

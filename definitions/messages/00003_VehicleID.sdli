@@ -9,12 +9,13 @@ interaction: PUSH
 latency: 1000ms
 pv: { size: 2, type: uint16 }
 fields:
-  - { name: time_stamp,           pv_bit: 0,  type: Timestamp }
-  - { name: vsm_id,               pv_bit: 1,  type: uint32 }
-  - { name: vehicle_id_update,    pv_bit: 2,  type: uint32 }
-  - { name: vehicle_type,         pv_bit: 3,  type: uint16, unit: enum }
-  - { name: vehicle_subtype,      pv_bit: 4,  type: uint16 }
-  - { name: owning_id,            pv_bit: 5,  type: uint8, unit: enum }
-  - { name: tail_number,          pv_bit: 6,  type: Char16 }
-  - { name: mission_id,           pv_bit: 7,  type: Char20 }
-  - { name: atc_call_sign,        pv_bit: 8,  type: Char32 }
+  - { name: "Time Stamp",           pv_bit: 0,  type: Timestamp }
+  - { name: "VSM ID",               pv_bit: 1,  type: uint32 }
+  - { name: "Vehicle ID Update",    pv_bit: 2,  type: uint32 }
+  - { name: "Vehicle Type",         pv_bit: 3,  type: uint16, unit: enum }
+  - { name: "Vehicle Subtype",      pv_bit: 4,  type: uint16 }
+  - { name: "Owning ID",            pv_bit: 5,  type: uint8, unit: enum }
+  - { name: "Tail Number",          pv_bit: 6,  type: Char16 }
+  - { name: "Mission ID",           pv_bit: 7,  type: Char20 }
+  - { name: "ATC Call Sign",        pv_bit: 8,  type: Char32 }
+  - { name: "Configuration Checksum", pv_bit: 9, type: uint16 }

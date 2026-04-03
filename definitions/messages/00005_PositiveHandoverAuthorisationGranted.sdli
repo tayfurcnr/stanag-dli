@@ -7,20 +7,21 @@ source: VSM / UA
 direction: VSM/UA -> CUCS
 interaction: RESPONSE
 latency: 1000ms
-pv: { size: 2, type: uint16 }
+pv: { size: 3, type: uint24 }
 fields:
-  - { name: time_stamp,           pv_bit: 0,  type: Timestamp }
-  - { name: vsm_id,               pv_bit: 1,  type: uint32 }
-  - { name: data_link_id,         pv_bit: 2,  type: uint32 }
-  - { name: loi_authorized,       pv_bit: 3,  type: uint8, unit: Bitmapped }
-  - { name: flight_mode_offset,   pv_bit: 4,  type: uint8 }
-  - { name: flight_modes_authorized, pv_bit: 5, type: uint32, unit: Bitmapped }
-  - { name: controlled_stn_1_16,  pv_bit: 6,  type: uint16, unit: Bitmapped }
-  - { name: component_number,     pv_bit: 7,  type: uint16, unit: Bitmapped }
-  - { name: sub_component_number, pv_bit: 8,  type: uint16, unit: Bitmapped }
-  - { name: vehicle_type,         pv_bit: 9,  type: uint16, unit: enum }
-  - { name: vehicle_subtype,      pv_bit: 10, type: uint16 }
-  - { name: cucs_type,            pv_bit: 11, type: uint8, unit: enum }
-  - { name: cucs_subtype,         pv_bit: 12, type: uint8 }
-  - { name: presence_vector_support, pv_bit: 13, type: uint8, unit: enum }
-  - { name: controlled_stn_17_32, pv_bit: 14, type: uint16, unit: Bitmapped }
+  - { name: "Time Stamp",           pv_bit: 0,  type: Timestamp }
+  - { name: "VSM ID",               pv_bit: 1,  type: uint32 }
+  - { name: "Data Link ID",         pv_bit: 2,  type: uint32 }
+  - { name: "LOI Authorized",       pv_bit: 3,  type: uint8, unit: Bitmapped }
+  - { name: "Flight Mode Offset",   pv_bit: 4,  type: uint8 }
+  - { name: "Flight Modes Authorized", pv_bit: 5, type: uint32, unit: Bitmapped }
+  - { name: "Controlled Station 1 16 Authorized", pv_bit: 6,  type: uint16, unit: Bitmapped }
+  - { name: "Component Number Authorized",      pv_bit: 7,  type: uint16, unit: Bitmapped }
+  - { name: "Sub-Component Number Authorized",  pv_bit: 8,  type: uint16, unit: Bitmapped }
+  - { name: "Vehicle Type",         pv_bit: 9,  type: uint16, unit: enum }
+  - { name: "Vehicle Subtype",      pv_bit: 10, type: uint16 }
+  - { name: "Requesting CUCS Type", pv_bit: 11, type: uint8,  unit: enum }
+  - { name: "Requesting CUCS Subtype", pv_bit: 12, type: uint16 }
+  - { name: "Requesting CUCS ID",   pv_bit: 13, type: uint32 }
+  - { name: "Presence Vector Support", pv_bit: 14, type: uint8, unit: enum }
+  - { name: "Controlled Station 17-32 Authorized", pv_bit: 15, type: uint16, unit: Bitmapped }

@@ -3,6 +3,7 @@
 #include <dli/core/BitCursor.hpp>
 #include <dli/core/Bam.hpp>
 #include <dli/core/Scaled.hpp>
+#include <array>
 #include <cstdint>
 
 namespace dli {
@@ -17,70 +18,94 @@ public:
 
     uint64_t time_stamp; // [ms]
 
-    uint32_t loiter_type; // [enum]
+    uint8_t loiter_type; // [enum]
 
-    uint32_t loiter_radius; // [m]
+    double loiter_radius; // [m]
 
-    uint32_t loiter_length; // [m]
+    double loiter_length; // [m]
 
-    uint32_t loiter_length_units; // [enum]
+    uint8_t loiter_length_units; // [enum]
 
     double loiter_bearing; // [rad]
 
-    uint32_t loiter_direction; // [enum]
+    uint8_t loiter_direction; // [enum]
 
-    uint32_t loiter_altitude; // [m]
+    double loiter_altitude; // [m]
 
-    uint32_t altitude_type; // [enum]
+    uint8_t altitude_type; // [enum]
 
-    uint32_t loiter_speed; // [m/s]
+    double loiter_speed; // [m/s]
+
+    uint8_t speed_type; // [enum]
+
+    uint8_t flying_behaviour; // [enum]
+
+    uint16_t loiter_duration;
+
+    uint8_t loiter_duration_units; // [enum]
 
 
     /**
      * @brief Serializes the message into the provided BitCursor.
      */
     void serialize(BitCursor& cursor) const {
-        uint32_t pv = 0;
+        uint64_t pv = 0;
         // Calculate Presence Vector (PV)
 
 
-        if (has_time_stamp) pv |= (1 << 0);
+        if (has_time_stamp) pv |= (uint64_t{1} << 0);
 
 
 
-        if (has_loiter_type) pv |= (1 << 1);
+        if (has_loiter_type) pv |= (uint64_t{1} << 1);
 
 
 
-        if (has_loiter_radius) pv |= (1 << 2);
+        if (has_loiter_radius) pv |= (uint64_t{1} << 2);
 
 
 
-        if (has_loiter_length) pv |= (1 << 3);
+        if (has_loiter_length) pv |= (uint64_t{1} << 3);
 
 
 
-        if (has_loiter_length_units) pv |= (1 << 4);
+        if (has_loiter_length_units) pv |= (uint64_t{1} << 4);
 
 
 
-        if (has_loiter_bearing) pv |= (1 << 5);
+        if (has_loiter_bearing) pv |= (uint64_t{1} << 5);
 
 
 
-        if (has_loiter_direction) pv |= (1 << 6);
+        if (has_loiter_direction) pv |= (uint64_t{1} << 6);
 
 
 
-        if (has_loiter_altitude) pv |= (1 << 7);
+        if (has_loiter_altitude) pv |= (uint64_t{1} << 7);
 
 
 
-        if (has_altitude_type) pv |= (1 << 8);
+        if (has_altitude_type) pv |= (uint64_t{1} << 8);
 
 
 
-        if (has_loiter_speed) pv |= (1 << 9);
+        if (has_loiter_speed) pv |= (uint64_t{1} << 9);
+
+
+
+        if (has_speed_type) pv |= (uint64_t{1} << 10);
+
+
+
+        if (has_flying_behaviour) pv |= (uint64_t{1} << 11);
+
+
+
+        if (has_loiter_duration) pv |= (uint64_t{1} << 12);
+
+
+
+        if (has_loiter_duration_units) pv |= (uint64_t{1} << 13);
 
 
         
@@ -89,7 +114,7 @@ public:
         // Write Fields
 
 
-        if (pv & (1 << 0)) {
+        if (pv & (uint64_t{1} << 0)) {
 
             cursor.write_int(time_stamp, 5);
 
@@ -97,7 +122,7 @@ public:
 
 
 
-        if (pv & (1 << 1)) {
+        if (pv & (uint64_t{1} << 1)) {
 
             cursor.write(loiter_type);
 
@@ -105,23 +130,23 @@ public:
 
 
 
-        if (pv & (1 << 2)) {
+        if (pv & (uint64_t{1} << 2)) {
 
-            cursor.write(loiter_radius);
-
-        }
-
-
-
-        if (pv & (1 << 3)) {
-
-            cursor.write(loiter_length);
+            cursor.write(scaled::to_scaled<uint16_t>(loiter_radius, 0.0, 1.5));
 
         }
 
 
 
-        if (pv & (1 << 4)) {
+        if (pv & (uint64_t{1} << 3)) {
+
+            cursor.write(scaled::to_scaled<uint16_t>(loiter_length, 0.0, 1.5));
+
+        }
+
+
+
+        if (pv & (uint64_t{1} << 4)) {
 
             cursor.write(loiter_length_units);
 
@@ -129,7 +154,7 @@ public:
 
 
 
-        if (pv & (1 << 5)) {
+        if (pv & (uint64_t{1} << 5)) {
 
             cursor.write(bam::to_bam16(loiter_bearing));
 
@@ -137,7 +162,7 @@ public:
 
 
 
-        if (pv & (1 << 6)) {
+        if (pv & (uint64_t{1} << 6)) {
 
             cursor.write(loiter_direction);
 
@@ -145,15 +170,15 @@ public:
 
 
 
-        if (pv & (1 << 7)) {
+        if (pv & (uint64_t{1} << 7)) {
 
-            cursor.write(loiter_altitude);
+            cursor.write_int(scaled::to_scaled<int32_t>(loiter_altitude, 0.0, 0.02), 3);
 
         }
 
 
 
-        if (pv & (1 << 8)) {
+        if (pv & (uint64_t{1} << 8)) {
 
             cursor.write(altitude_type);
 
@@ -161,9 +186,41 @@ public:
 
 
 
-        if (pv & (1 << 9)) {
+        if (pv & (uint64_t{1} << 9)) {
 
-            cursor.write(loiter_speed);
+            cursor.write(scaled::to_scaled<uint16_t>(loiter_speed, 0.0, 0.5));
+
+        }
+
+
+
+        if (pv & (uint64_t{1} << 10)) {
+
+            cursor.write(speed_type);
+
+        }
+
+
+
+        if (pv & (uint64_t{1} << 11)) {
+
+            cursor.write(flying_behaviour);
+
+        }
+
+
+
+        if (pv & (uint64_t{1} << 12)) {
+
+            cursor.write(loiter_duration);
+
+        }
+
+
+
+        if (pv & (uint64_t{1} << 13)) {
+
+            cursor.write(loiter_duration_units);
 
         }
 
@@ -171,78 +228,106 @@ public:
     }
 
     void deserialize(BitCursor& cursor) {
-        uint32_t pv = 0;
+        uint64_t pv = 0;
         cursor.read_int(pv, 2);
 
         // Read Fields
 
 
-        if (pv & (1 << 0)) {
+        if (pv & (uint64_t{1} << 0)) {
             has_time_stamp = true;
             cursor.read_int(time_stamp, 5);
         }
 
 
 
-        if (pv & (1 << 1)) {
+        if (pv & (uint64_t{1} << 1)) {
             has_loiter_type = true;
             cursor.read(loiter_type);
         }
 
 
 
-        if (pv & (1 << 2)) {
+        if (pv & (uint64_t{1} << 2)) {
             has_loiter_radius = true;
-            cursor.read(loiter_radius);
+            uint16_t tmp_loiter_radius; cursor.read(tmp_loiter_radius); loiter_radius = scaled::from_scaled<uint16_t, double>(tmp_loiter_radius, 0.0, 1.5);
         }
 
 
 
-        if (pv & (1 << 3)) {
+        if (pv & (uint64_t{1} << 3)) {
             has_loiter_length = true;
-            cursor.read(loiter_length);
+            uint16_t tmp_loiter_length; cursor.read(tmp_loiter_length); loiter_length = scaled::from_scaled<uint16_t, double>(tmp_loiter_length, 0.0, 1.5);
         }
 
 
 
-        if (pv & (1 << 4)) {
+        if (pv & (uint64_t{1} << 4)) {
             has_loiter_length_units = true;
             cursor.read(loiter_length_units);
         }
 
 
 
-        if (pv & (1 << 5)) {
+        if (pv & (uint64_t{1} << 5)) {
             has_loiter_bearing = true;
             uint16_t tmp_loiter_bearing; cursor.read(tmp_loiter_bearing); loiter_bearing = bam::from_bam16(tmp_loiter_bearing);
         }
 
 
 
-        if (pv & (1 << 6)) {
+        if (pv & (uint64_t{1} << 6)) {
             has_loiter_direction = true;
             cursor.read(loiter_direction);
         }
 
 
 
-        if (pv & (1 << 7)) {
+        if (pv & (uint64_t{1} << 7)) {
             has_loiter_altitude = true;
-            cursor.read(loiter_altitude);
+            int32_t tmp_loiter_altitude; cursor.read_int(tmp_loiter_altitude, 3); loiter_altitude = scaled::from_scaled<int32_t, double>(tmp_loiter_altitude, 0.0, 0.02);
         }
 
 
 
-        if (pv & (1 << 8)) {
+        if (pv & (uint64_t{1} << 8)) {
             has_altitude_type = true;
             cursor.read(altitude_type);
         }
 
 
 
-        if (pv & (1 << 9)) {
+        if (pv & (uint64_t{1} << 9)) {
             has_loiter_speed = true;
-            cursor.read(loiter_speed);
+            uint16_t tmp_loiter_speed; cursor.read(tmp_loiter_speed); loiter_speed = scaled::from_scaled<uint16_t, double>(tmp_loiter_speed, 0.0, 0.5);
+        }
+
+
+
+        if (pv & (uint64_t{1} << 10)) {
+            has_speed_type = true;
+            cursor.read(speed_type);
+        }
+
+
+
+        if (pv & (uint64_t{1} << 11)) {
+            has_flying_behaviour = true;
+            cursor.read(flying_behaviour);
+        }
+
+
+
+        if (pv & (uint64_t{1} << 12)) {
+            has_loiter_duration = true;
+            cursor.read(loiter_duration);
+        }
+
+
+
+        if (pv & (uint64_t{1} << 13)) {
+            has_loiter_duration_units = true;
+            cursor.read(loiter_duration_units);
         }
 
 
@@ -288,6 +373,22 @@ public:
 
 
     bool has_loiter_speed = false;
+
+
+
+    bool has_speed_type = false;
+
+
+
+    bool has_flying_behaviour = false;
+
+
+
+    bool has_loiter_duration = false;
+
+
+
+    bool has_loiter_duration_units = false;
 
 
 };

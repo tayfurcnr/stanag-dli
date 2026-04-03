@@ -1,5 +1,5 @@
 # Message #4000: Inertial States
-# Table 4-73, AEP-84 Vol II (Verified field-by-field)
+# Table 4-73, AEP-84 Vol II
 id: 4000
 name: InertialStates
 group: FlightVehiclePayloadRelevantStatus
@@ -9,19 +9,21 @@ interaction: PUSH (Periodic)
 latency: 500ms
 pv: { size: 3, type: uint24 }
 fields:
-  - { name: time_stamp,         pv_bit: 0,  type: Timestamp }
-  - { name: position,           pv_bit: 1,  type: GlobalPos, composition: flattened }
-  - { name: altitude_type,      pv_bit: 4,  type: uint8, unit: enum }
-  - { name: u_speed,            pv_bit: 5,  type: int16, unit: m/s, scale: 0.05 } # True North
-  - { name: v_speed,            pv_bit: 6,  type: int16, unit: m/s, scale: 0.05 } # True East
-  - { name: w_speed,            pv_bit: 7,  type: int16, unit: m/s, scale: 0.05 } # Down
-  - { name: u_accel,            pv_bit: 8,  type: int16, unit: m/s^2, scale: 0.005 }
-  - { name: v_accel,            pv_bit: 9,  type: int16, unit: m/s^2, scale: 0.005 }
-  - { name: w_accel,            pv_bit: 10, type: int16, unit: m/s^2, scale: 0.005 }
-  - { name: roll,               pv_bit: 11, type: BAM16, unit: rad }
-  - { name: pitch,              pv_bit: 12, type: BAM16, unit: rad }
-  - { name: heading,            pv_bit: 13, type: BAM16, unit: rad }
-  - { name: roll_rate,          pv_bit: 14, type: int16, unit: rad/s, scale: 0.005 }
-  - { name: pitch_rate,         pv_bit: 15, type: int16, unit: rad/s, scale: 0.005 }
-  - { name: turn_rate,          pv_bit: 16, type: int16, unit: rad/s, scale: 0.005 }
-  - { name: magnetic_variation, pv_bit: 17, type: BAM16, unit: rad }
+  - { name: "Time Stamp",         pv_bit: 0,  type: Timestamp }
+  - { name: "Latitude",           pv_bit: 1,  type: BAM32, unit: rad }
+  - { name: "Longitude",          pv_bit: 2,  type: BAM32, unit: rad }
+  - { name: "Altitude",           pv_bit: 3,  type: int24, unit: m, scale: 0.02 }
+  - { name: "Altitude Type",      pv_bit: 4,  type: uint8, unit: enum }
+  - { name: "U_Speed",            pv_bit: 5,  type: int16, unit: m/s, scale: 0.05 }
+  - { name: "V_Speed",            pv_bit: 6,  type: int16, unit: m/s, scale: 0.05 }
+  - { name: "W_Speed",            pv_bit: 7,  type: int16, unit: m/s, scale: 0.05 }
+  - { name: "U_Accel",            pv_bit: 8,  type: int16, unit: m/s^2, scale: 0.005 }
+  - { name: "V_Accel",            pv_bit: 9,  type: int16, unit: m/s^2, scale: 0.005 }
+  - { name: "W_Accel",            pv_bit: 10, type: int16, unit: m/s^2, scale: 0.005 }
+  - { name: "Roll",               pv_bit: 11, type: BAM16, unit: rad }
+  - { name: "Pitch",              pv_bit: 12, type: BAM16, unit: rad }
+  - { name: "Heading",            pv_bit: 13, type: BAM16, unit: rad }
+  - { name: "Roll Rate",          pv_bit: 14, type: int16, unit: rad/s, scale: 0.005 }
+  - { name: "Pitch Rate",         pv_bit: 15, type: int16, unit: rad/s, scale: 0.005 }
+  - { name: "Turn Rate",          pv_bit: 16, type: int16, unit: rad/s, scale: 0.005 }
+  - { name: "Magnetic Variation", pv_bit: 17, type: BAM16, unit: rad }

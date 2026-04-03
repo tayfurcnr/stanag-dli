@@ -9,5 +9,5 @@ interaction: REPORT
 latency: 100ms
 pv: { size: 1, type: uint8 }
 fields:
-  - { name: time_stamp,           pv_bit: 0,  type: Timestamp }
-  - { name: flight_path_control_mode, pv_bit: 1, type: uint8, unit: enum }
+  - { name: "Time Stamp",                 pv_bit: 0,  type: Timestamp }
+  - { name: "Select Flight Path Control Mode", pv_bit: 1, type: uint8, unit: enum }
