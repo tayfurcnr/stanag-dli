@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <UdpTransport.hpp>
 #include <dli/protocol/DliMessage.hpp>
-#include <dli/generated/InertialStates.hpp>
+#include <dli/generated/messages/InertialStates.hpp>
 #include <thread>
 #include <chrono>
 

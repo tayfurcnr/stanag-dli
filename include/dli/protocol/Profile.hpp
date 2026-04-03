@@ -22,14 +22,13 @@ public:
         m_allowedMessages.insert(messageType);
     }
 
-    void allow_group(const std::set<uint16_t>& messageIds) {
-        m_allowedMessages.insert(messageIds.begin(), messageIds.end());
+    void deny(uint16_t messageType) {
+        m_allowedMessages.erase(messageType);
     }
 
     bool is_permitted(uint16_t messageType) const {
-        // If profile is empty, we assume "Allow All" (Default/Development mode)
-        // or "Strictly Nothing" depending on policy. Standard says: restricted.
-        if (m_allowedMessages.empty()) return true; 
+        // If profile is empty, we assume "Strictly Restricted" (Production Default)
+        if (m_allowedMessages.empty()) return false; 
         return m_allowedMessages.find(messageType) != m_allowedMessages.end();
     }
 

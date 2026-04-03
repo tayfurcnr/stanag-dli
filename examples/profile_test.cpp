@@ -1,5 +1,6 @@
 #include <dli/protocol/Dispatcher.hpp>
 #include <dli/protocol/Profile.hpp>
+#include <dli/generated/profiles/Profiles.hpp>
 #include <dli/core/ILogger.hpp>
 #include <iostream>
 #include <cassert>
@@ -11,13 +12,10 @@ int main() {
 
     Dispatcher dispatcher;
 
-    // 1. Setup LOI 2 (Monitor Only) Profile
-    Profile loi2("LOI2_Monitor", 2);
-    loi2.allow(4000); // Allow Inertial States (Telemetry)
+    // 1. Setup Generated LOI 4 Profile (Control & Monitor)
+    auto loi4 = dli::generated::Profiles::LOI4_UA_Control();
     
-    // Note: ID 02016 (Vehicle Operating Mode Command) is NOT allowed in LOI 2.
-    
-    dispatcher.setProfile(loi2);
+    dispatcher.setProfile(loi4);
 
     // 2. Prepare mock buffers
     uint8_t buffer4000[20] = {0}; // Min header size
@@ -48,11 +46,35 @@ int main() {
     assert(handlerTriggered == true);
     Logger::info("Result: SUCCESS (Message Allowed)");
 
-    // 5. Dispatch Command (Should be Rejected)
     Logger::info("Dispatching Unauthorized Message #2016...");
     auto res2 = dispatcher.dispatch(buffer2016, 20);
     assert(!res2.has_value());
     Logger::info("Result: SUCCESS (Message Rejected by DLI Policy)");
+
+    // 6. Test Custom Tactical Profile
+    Logger::info("--- Switching to Custom Tactical Profile ---");
+    auto custom = dli::generated::Profiles::Custom_Tactical();
+    dispatcher.setProfile(custom);
+
+    // Heartbeat (#16002) should be allowed (manual include)
+    uint8_t buffer16002[20] = {0};
+    buffer16002[12] = (16002 >> 8) & 0xFF;
+    buffer16002[13] = 16002 & 0xFF;
+    
+    dispatcher.registerHandler(16002, [](const DliHeader&, BitCursor&) { return 0; });
+    
+    Logger::info("Dispatching Heartbeat #16002 (Manual Include)...");
+    assert(dispatcher.dispatch(buffer16002, 20).has_value());
+    Logger::info("Result: SUCCESS");
+
+    // VehicleID (#3) should be rejected (manual exclude despite being in SystemID group)
+    uint8_t buffer3[20] = {0};
+    buffer3[12] = (3 >> 8) & 0xFF;
+    buffer3[13] = 3 & 0xFF;
+    
+    Logger::info("Dispatching VehicleID #3 (Manual Exclude)...");
+    assert(!dispatcher.dispatch(buffer3, 20).has_value());
+    Logger::info("Result: SUCCESS (Rejected as expected)");
 
     Logger::info("=== AEP-84 Profile Conformance Test PASSED! ===");
     return 0;

@@ -151,10 +151,13 @@ class DLIGenerator:
             
         output = render_template(template_content, context)
         
-        out_path = os.path.join(self.root, f"include/dli/generated/{msg['name']}.hpp")
+        self.output_dir = os.path.join(self.root, "idl/cpp/dli/generated/messages")
+        os.makedirs(self.output_dir, exist_ok=True)
+        
+        out_path = os.path.join(self.output_dir, f"{msg['name']}.hpp")
         with open(out_path, 'w') as f:
             f.write(output)
-        print(f"Generated: {out_path}")
+        print(f"Generated [C++]: {out_path}")
 
 if __name__ == "__main__":
     # Dynamically find project root based on script location

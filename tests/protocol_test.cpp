@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cassert>
-#include <dli/generated/InertialStates.hpp>
+#include <dli/generated/messages/InertialStates.hpp>
 #include <dli/protocol/DliMessage.hpp>
 #include <dli/protocol/Dispatcher.hpp>
 

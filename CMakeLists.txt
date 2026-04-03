@@ -5,13 +5,16 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # -----------------------------------------------------------------------------
-# SDK Library Target (INTERFACE / Header-Only Core)
+# SDK Library Target (STATIC Core)
 # -----------------------------------------------------------------------------
-add_library(dli INTERFACE)
+add_library(dli STATIC
+    src/protocol/Dispatcher.cpp
+    src/session/DliSession.cpp
+)
 
-
-target_include_directories(dli INTERFACE
+target_include_directories(dli PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/idl/cpp>
     $<INSTALL_INTERFACE:include>
 )
 

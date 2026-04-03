@@ -1,23 +1,22 @@
 #include <UdpTransport.hpp>
 #include <dli/protocol/DliHeader.hpp>
 #include <dli/core/BitCursor.hpp>
+#include <dli/generated/messages/InertialStates.hpp>
 #include <iostream>
 #include <thread>
 #include <chrono>
 #include <vector>
 
 using namespace dli;
+using namespace dli::generated;
 
-/**
- * @brief Simple utility to bridge simulated DLI traffic to the network.
- */
 int main() {
     std::cout << "[DLI Bridge] Initializing UDP Multicast Transport..." << std::endl;
 
     UdpTransport::Config config;
     config.multicast_group = "239.1.2.3";
     config.port = 30001;
-    config.mtu = 548; // AEP-84 policy
+    config.mtu = 548;
     config.caps.supports_packing = true;
 
     UdpTransport transport(config);
@@ -27,45 +26,57 @@ int main() {
     }
 
     std::cout << "[DLI Bridge] Multicast Group: " << config.multicast_group << ":" << config.port << std::endl;
-    std::cout << "[DLI Bridge] MTU: " << config.mtu << " bytes | Packing: ENABLED" << std::endl;
 
-    // Simulate sending some DLI messages
     uint32_t msg_count = 0;
-    auto start_time = std::chrono::steady_clock::now();
-
-    while (msg_count < 10) {
-        DliHeader header;
-        header.message_type = 4000; // Inertial States
-        header.source_id = 100;
-        header.destination_id = 0; // Broadcast
-        header.payload_length = 8;  // Dummy payload
-
-        std::vector<uint8_t> buffer(DliHeader::FIXED_SIZE + 8);
-        BitCursor cursor(buffer.data(), buffer.size());
-        header.serialize(cursor);
+    while (msg_count < 20) {
+        // 1. Create a real InertialStates message
+        InertialStates msg;
+        msg.has_time_stamp = true;
+        msg.time_stamp = std::chrono::system_clock::now().time_since_epoch().count() / 1000000;
         
-        // Dummy payload bytes
-        for(int i=0; i<8; ++i) buffer[DliHeader::FIXED_SIZE + i] = static_cast<uint8_t>(msg_count + i);
+        msg.has_latitude = true;
+        msg.latitude = 40.123456 + (msg_count * 0.0001); // Bursa/TURKEY area
+        
+        msg.has_longitude = true;
+        msg.longitude = 29.123456 + (msg_count * 0.0001);
+        
+        msg.has_altitude = true;
+        msg.altitude = 1500.5 + msg_count;
 
-        std::cout << "[DLI Bridge] Sending Message #" << (msg_count + 1) << " (Type 4000)..." << std::endl;
-        transport.send(buffer.data(), buffer.size());
+        msg.has_heading = true;
+        msg.heading = 1.57; // 90 degrees
+
+        // 2. Serialize Payload
+        std::vector<uint8_t> payload_buf(128);
+        BitCursor pay_cursor(payload_buf.data(), payload_buf.size());
+        msg.serialize(pay_cursor);
+        uint32_t pay_len = pay_cursor.byteOffset();
+
+        // 3. Prepare DLI Packet (Header + Payload)
+        DliHeader header;
+        header.message_type = 4000;
+        header.source_id = 100;
+        header.destination_id = 0;
+        header.payload_length = pay_len;
+
+        std::vector<uint8_t> packet_buf(DliHeader::FIXED_SIZE + pay_len);
+        BitCursor pack_cursor(packet_buf.data(), packet_buf.size());
+        header.serialize(pack_cursor);
+        
+        // Copy payload manually to bit-boundary (DLI payload starts at byte 20)
+        std::copy(payload_buf.begin(), payload_buf.begin() + pay_len, packet_buf.begin() + DliHeader::FIXED_SIZE);
+
+        std::cout << "[DLI Bridge] Sending InertialStates #" << (msg_count + 1) 
+                  << " | Lat: " << msg.latitude << " | Lon: " << msg.longitude << std::endl;
+        
+        transport.send(packet_buf.data(), packet_buf.size());
 
         msg_count++;
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-
-        // Every 5 messages, we might want to see if it packed them
-        if (msg_count % 5 == 0) {
-            std::cout << "[DLI Bridge] Stats - TX Datagrams: " << transport.get_tx_count() 
-                      << " | RX Messages: " << transport.get_rx_count() << std::endl;
-        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
-    std::cout << "[DLI Bridge] Finalizing transmission (flushing buffer)..." << std::endl;
     transport.flush();
-
-    std::cout << "[DLI Bridge] Final Stats - TX Datagrams: " << transport.get_tx_count() << std::endl;
-    std::cout << "[DLI Bridge] Bridge shutting down. 🫡" << std::endl;
-
+    std::cout << "[DLI Bridge] Done. 🫡" << std::endl;
     transport.stop();
     return 0;
 }
