@@ -250,10 +250,16 @@ def test_profile_generator_validates_and_applies_exclude_groups():
         temp_prof_gen = ProfileGenerator(tmp_root)
         temp_prof_gen.generate()
         profiles_hpp = os.path.join(tmp_root, "idl/cpp/dli/generated/profiles/Profiles.hpp")
+        profiles_py = os.path.join(tmp_root, "idl/python/dli/generated/profiles/__init__.py")
         with open(profiles_hpp, "r") as f:
             generated = f.read()
         assert "p.allow(1); // MsgA (GroupA)" in generated
         assert "p.deny(2); // MsgB (GroupB)" in generated
+        with open(profiles_py, "r") as f:
+            generated_py = f.read()
+        assert "def Test()" in generated_py
+        assert "p.allow(1)  # MsgA (GroupA)" in generated_py
+        assert "p.deny(2)  # MsgB (GroupB)" in generated_py
 
 
 if __name__ == "__main__":

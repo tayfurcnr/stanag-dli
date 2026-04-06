@@ -11,6 +11,7 @@ An enterprise-grade, high-performance SDK for STANAG 4586 DLI (Data Link Interfa
   - Automated Interface Control Sheet (ICS) generation.
   - Automated Interoperability Level (LoI) profile enforcement.
 - **Transport Agnostic**: Decoupled IO layer via `ITransport` interfaces.
+- **Symmetric Runtime Surface**: C++ and Python both expose dispatcher-driven sessions, generated profiles, and transport lifecycle methods (`start/stop/poll/flush/send`).
 
 ## Project Structure (Clean Root)
 
@@ -40,10 +41,35 @@ cmake ..
 make -j$(nproc)
 ```
 
+Minimal consumer example with `find_package(dli)`:
+```cmake
+find_package(dli REQUIRED CONFIG)
+add_executable(app main.cpp)
+target_link_libraries(app PRIVATE dli::dli)
+```
+
 ### Python Setup
-Add `idl/python` to your `PYTHONPATH`:
+For editable local development:
 ```bash
-export PYTHONPATH=$PYTHONPATH:$(pwd)/idl/python
+python3 -m pip install -e .
+```
+
+Wheel smoke build:
+```bash
+python3 -m pip wheel . --no-deps --no-build-isolation -w dist
+```
+
+Minimal Python runtime shape:
+```python
+from dli.protocol import Dispatcher
+from dli.session import DliSession
+from dli.transport import MulticastTransport
+
+dispatcher = Dispatcher()
+session = DliSession(dispatcher)
+session.add_transport(MulticastTransport(autostart=False))
+session.start_transports()
+session.spin_once()
 ```
 
 ### Running Tests
@@ -55,9 +81,9 @@ ctest --output-on-failure
 > [!NOTE]
 > `TransportTest` opens real UDP multicast sockets. It may fail inside restricted sandbox/container environments even when the code is correct, while passing on the host machine.
 
-For Python, use the verification script:
+For Python, run the pytest suite:
 ```bash
-python3 idl/python/tests/verify_python_dli.py
+python3 -m pytest -q
 ```
 
 ### Generating Assets
@@ -68,6 +94,23 @@ python3 generator/dli_gen_python.py # Python
 python3 generator/dissector_gen.py  # Wireshark
 python3 generator/ics_gen.py        # Docs (ICS Report)
 python3 generator/profile_gen.py    # C++ Profiles
+```
+
+### Unified Verification
+Use the standardized verification workflow for sandbox-safe checks:
+```bash
+python3 tools/full_verify.py
+```
+
+To include host-only multicast transport checks:
+```bash
+python3 tools/full_verify.py --host
+```
+
+Equivalent convenience targets are also available:
+```bash
+make verify
+make verify-host
 ```
 
 ## Documentation

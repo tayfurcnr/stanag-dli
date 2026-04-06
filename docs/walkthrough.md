@@ -15,13 +15,13 @@ DLI documentation and source code now incorporate critical protocol constants:
 - **Payload Length:** Net message body lengths (excluding header) are pre-calculated for each message.
 
 ### 3. High-Fidelity ICS Report
-The [ICS_Report.md](file:///home/tayfurcnr/Desktop/STANAG/DLI/docs/ICS_Report.md) document serves as a standard-compliant technical reference:
+The `docs/ICS_Report.md` document serves as a standard-compliant technical reference:
 - **Offset & Encoding:** Byte offsets and specific encoding types (`BAM32`, `uint40`, etc.) for every field.
 - **Profile Mapping:** Detailed "Full Support" vs. "Optional" status for LOI 2 and LOI 4 profiles.
 - **DLI Nomenclature:** Standard-compliant terminology (e.g., `Payload Length` instead of `Wire Length`).
 
-### 4. C++ Runtime Verification
-Smoke tests using the generated [header files](file:///home/tayfurcnr/Desktop/STANAG/DLI/include/dli/generated/) have validated the runtime performance:
+### 4. Runtime Verification
+Smoke tests using the generated SDK assets under `idl/cpp/dli/generated/` and `idl/python/dli/generated/` validate the runtime surface:
 - **Sequential PV Processing:** Bit-level I/O over 3-byte Presence Vectors.
 - **Endianness Safety:** All data is guaranteed Big-Endian in wire format.
 - **Capability-Aware Dispatcher:** Correct message routing based on active role handlers.
@@ -41,21 +41,21 @@ The STANAG 4586 DLI SDK now includes a fully automated Wireshark Lua Dissector. 
 - **Presence Vector Aware**: Correctly identifies and skips optional fields based on the message PV.
 
 ### Visual Verification:
-![Wireshark Dissector Output](/home/tayfurcnr/Desktop/STANAG/stanag-dli/wireshark_success.png)
+The dissector artifact is generated at `idl/lua/dli.lua` and can be loaded into Wireshark for live packet inspection.
 > [!TIP]
-> Use `wireshark -X lua_script:dli.lua` to start analyzing your STANAG 4586 traffic immediately.
+> Use `wireshark -X lua_script:idl/lua/dli.lua` to start analyzing STANAG 4586 traffic.
 
 ## Conclusion
-The DLI SDK is now a production-ready, enterprise-grade protocol engine. It features:
+The DLI SDK provides the following verified capabilities:
 1. **Modular C++17 Architecture** (Core, Protocol, Transport, Session).
 2. **AEP-84 Compliance** (LoI Profile Filtering & MTU Packing).
 3. **Transport Agnosticism** (UDP Multicast & Generic ITransport).
-4. **Automated Ecosystem** (C++ Header Gen, Python ICD Gen, Lua Dissector Gen).
+4. **Automated Ecosystem** (C++/Python message generation, C++/Python profile generation, Lua dissector generation, ICS generation).
 
-Ready for deployment in high-integrity GCS or UAV systems. 🫡
+Current verification focuses on repo-local generation, unit/smoke coverage, and host-only transport checks when explicitly requested.
 
 ### Phase 9: Pure Protocol Session Reliability
-- **Architecture Context:** Upgraded the framework to a strictly decoupled "Pure Protocol Motor." The `DliSession` logic operates entirely independent of any networking socket/UDP constraints. This prepares it to be attached to any physical medium (IPC, Serial, UDP) simply via the `SendFunction` hook.
+- **Architecture Context:** Upgraded the framework to a strictly decoupled protocol engine. The `DliSession` logic can run independently of socket ownership and attach to an injected transport surface.
 - **Reliability Logic:** Completed the asynchronous callback-based reliable retransmission flow with a stable iterator tick architecture to inherently prevent reentrancy invalidation in synchronous Mock networks.
 - **ACK Timestamps:** Overcame the AEP-84 dynamic Presence Vector size variance by plumbing exactly parsed `uint64_t` original_time_stamps straight from the typed `Dispatcher` logic, ensuring 100% accurate correlation.
 - **Validation Results:**
@@ -96,13 +96,14 @@ Ready for deployment in high-integrity GCS or UAV systems. 🫡
 
 ## Phase 15: Profile Engine & Multi-Language Scalability
 - **Architecture Context:** Established a professional, hierarchical `idl/` root directory.
-- **Profiles Implementation:** Automated profile selection via `Profiles.hpp` generator. Supports `include_groups`, `include_messages`, and `exclude_messages` for surgical precision in LoI compliance.
+- **Profiles Implementation:** Automated profile selection via generated `Profiles` surfaces for both C++ and Python. Supports `include_groups`, `include_messages`, and `exclude_messages` for surgical precision in LoI compliance.
 - **Hierarchy:** 
   - `idl/cpp/dli/generated/messages/`
   - `idl/cpp/dli/generated/profiles/`
+  - `idl/python/dli/generated/profiles/`
   - `idl/lua/`
 - **Verification:** `profile_test` and `multicast_bridge` are verified with the new hierarchical include paths.
   - Successfully validated `Custom_Tactical_Profile` with manual overrides (Heartbeat allowed, VehicleID excluded).
 
 ---
-**Final Status:** The DLI Framework is now a professional-grade, multi-language-ready C++ SDK. It is modular, high-performance, and compliant with AEP-84 Volume II. The entire ecosystem is automated from single-source-of-truth definitions. 🫡
+**Final Status:** The DLI Framework is a multi-language SDK workspace with shared SDLI definitions, generated artifacts, runtime layers, and verification tooling for C++ and Python.

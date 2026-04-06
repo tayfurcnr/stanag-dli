@@ -3,7 +3,7 @@
 This document describes the high-level architecture of the STANAG 4586 DLI SDK. The framework is built with a strictly decoupled, layered approach to ensure maximum performance, portability, and AEP-84 compliance.
 
 > [!NOTE]
-> The SDK uses a traditional C++ structure where **Interfaces (.hpp)** and **Implementations (.cpp)** are separated in `include/` and `src/` respectively, allowing for static library compilation and improved build times.
+> The C++ SDK lives under `idl/cpp/dli/`, with headers and implementations organized by layer (`core/`, `protocol/`, `session/`, `transport/`). Generated artifacts live under `idl/cpp/dli/generated/`.
 
 ## 1. Layered Architecture
 
@@ -23,16 +23,17 @@ Defines the AEP-84 Volume II "Wrapper" and filtering logic.
 
 ### 1.3 Session Layer (`dli/session/`)
 Manages stateful communication and reliability (Message #17000 ACKs).
-- **`DliSession`**: A pure protocol engine that handles retransmissions, ACK correlation, and session-level error reporting (e.g., CRC failures) independently of any networking stack.
+- **`DliSession`**: A dispatcher-driven protocol engine that handles retransmissions, ACK correlation, transport polling, and session-level error reporting (e.g., CRC failures) independently of socket ownership.
 
 ### 1.4 Transport Layer (`dli/transport/`)
 The physical delivery mechanism.
-- **`ITransport`**: An abstract interface for sending/receiving DLI packets.
-- **`UdpTransport`**: A reference POSIX implementation supporting Multicast, Non-blocking I/O, and MTU-aware Packing (batching multiple DLI messages into one UDP datagram).
+- **`ITransport`**: An abstract interface for lifecycle and message flow (`start`, `stop`, `send`, `poll`, `flush`).
+- **`MulticastTransport`**: A reference POSIX implementation supporting Multicast, Non-blocking I/O, and MTU-aware Packing (batching multiple DLI messages into one UDP datagram).
 
 ### 1.5 Generated Assets (`idl/`)
 Centralized repository for all code and assets produced by the generator suite.
-- **`cpp/`**: Hierarchical C++ headers (`messages/`, `profiles/`). 
+- **`cpp/`**: Hierarchical C++ SDK sources, tests, examples, and generated headers (`messages/`, `profiles/`).
+- **`python/`**: Python runtime, generated messages, generated profiles, and tests.
 - **`lua/`**: Wireshark dissector scripts.
 
 ---
@@ -43,14 +44,15 @@ The SDK follows a "Single Source of Truth" philosophy using `.sdli` (YAML-based)
 1. **`dli_gen.py`**: Reads definitions and outputs type-safe C++ message classes in `idl/cpp/dli/generated/messages/`.
 2. **`ics_gen.py`**: Generates human-readable compliance reports (`docs/ICS_Report.md`).
 3. **`dissector_gen.py`**: Generates a Lua plugin for Wireshark (`idl/lua/dli.lua`).
-4. **`profile_gen.py`**: Generates C++ profile classes in `idl/cpp/dli/generated/profiles/`.
+4. **`profile_gen.py`**: Generates C++ and Python profile classes in `idl/cpp/dli/generated/profiles/` and `idl/python/dli/generated/profiles/`.
 
 ---
 
 ## 3. Data Flow
 
-1. **Outgoing**: `Application` -> `Generated Class` (Serialize) -> `DliSession` (Reliability/ACK) -> `UdpTransport` (Packing/Multicast) -> `Wire`.
-2. **Incoming**: `Wire` -> `UdpTransport` -> `DliSession` (De-packing/CRC/ACK) -> `Dispatcher` (Profile Filter) -> `Application Handler`.
+1. **Outgoing**: `Application` -> `Generated Class` (Serialize) -> `DliSession` (Reliability/ACK) -> `MulticastTransport` (Packing/Multicast) -> `Wire`.
+2. **Incoming**: `Wire` -> `MulticastTransport` -> `DliSession` (De-packing/CRC/ACK) -> `Dispatcher` (Profile Filter) -> `Application Handler`.
+3. **Runtime Loop**: `DliSession` owns the orchestration boundary in both C++ and Python: transports are attached to the session, polled through the session, and flushed/stopped through the same surface.
 
 ---
 
@@ -60,6 +62,7 @@ The SDK follows a "Single Source of Truth" philosophy using `.sdli` (YAML-based)
 - **Endianness**: Big-Endian wire format guaranteed.
 - **Presence Vector**: Sequential LSB-0 bitmasking as per standard tables.
 - **Profile Filtering**: Hard-enforced LoI message whitelisting.
+- **Runtime Symmetry**: C++ and Python both expose header/message/profile/dispatcher/session building blocks, with generated message and profile assets sourced from the same SDLI definitions.
 
 ---
 *Architected for high-integrity, real-time UAV/GCS ecosystems.* 🫡

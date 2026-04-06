@@ -1,13 +1,13 @@
 import yaml
 import os
 
-def check_dependencies():
+def test_capability_dependencies():
     print("[Test] Capability Dependency Check...")
     
-    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    root = os.path.join(root_dir, "definitions/")
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    root = os.path.join(repo_root, "definitions")
     cap_path = os.path.join(root, "common/capabilities.sdli")
-    profiles_dir = os.path.join(root, "profiles/")
+    profiles_dir = os.path.join(root, "profiles")
     
     with open(cap_path, 'r') as f:
         caps = yaml.safe_load(f)['capabilities']
@@ -40,7 +40,7 @@ def check_dependencies():
 
 if __name__ == "__main__":
     try:
-        check_dependencies()
+        test_capability_dependencies()
         print("Dependency Validation Successful!")
     except Exception as e:
         print(f"FAILED: {e}")

@@ -7,8 +7,10 @@ class ProfileGenerator:
         self.root = root
         self.messages_dir = os.path.join(root, "definitions/messages")
         self.profiles_dir = os.path.join(root, "definitions/profiles")
-        self.output_dir = os.path.join(root, "idl/cpp/dli/generated/profiles")
-        os.makedirs(self.output_dir, exist_ok=True)
+        self.cpp_output_dir = os.path.join(root, "idl/cpp/dli/generated/profiles")
+        self.python_output_dir = os.path.join(root, "idl/python/dli/generated/profiles")
+        os.makedirs(self.cpp_output_dir, exist_ok=True)
+        os.makedirs(self.python_output_dir, exist_ok=True)
         
         self.groups = {} # group_name -> set of msg_ids
         self.messages = {} # msg_id -> msg_name
@@ -71,7 +73,9 @@ class ProfileGenerator:
     def generate(self):
         print(f"[Profiles] Generating C++ classes for {len(self.groups)} groups...")
         self._gen_profiles_hpp()
-        print(f"[Profiles] Generated: {os.path.join(self.output_dir, 'Profiles.hpp')}")
+        self._gen_profiles_py()
+        print(f"[Profiles] Generated: {os.path.join(self.cpp_output_dir, 'Profiles.hpp')}")
+        print(f"[Profiles] Generated: {os.path.join(self.python_output_dir, '__init__.py')}")
 
     def _gen_profiles_hpp(self):
         hpp = []
@@ -121,8 +125,53 @@ class ProfileGenerator:
         hpp.append("\n} // namespace generated")
         hpp.append("} // namespace dli")
 
-        with open(os.path.join(self.output_dir, "Profiles.hpp"), 'w') as f:
+        with open(os.path.join(self.cpp_output_dir, "Profiles.hpp"), 'w') as f:
             f.write("\n".join(hpp))
+
+    def _gen_profiles_py(self):
+        py = []
+        py.append("from dli.protocol import Profile")
+        py.append("")
+        py.append("")
+        py.append("class Profiles:")
+
+        for filename in sorted(os.listdir(self.profiles_dir)):
+            if not filename.endswith(".profile"):
+                continue
+            prof = self._load_profile(filename)
+            p_name = prof["name"]
+            method_name = p_name.replace("_Profile", "").replace(" ", "_")
+
+            py.append("    @staticmethod")
+            py.append(f"    def {method_name}():")
+            py.append(f"        p = Profile({p_name!r}, {prof['loi']})")
+
+            for group in prof.get("include_groups", []):
+                if group not in self.groups:
+                    continue
+                for mid in sorted(self.groups[group]):
+                    py.append(f"        p.allow({mid})  # {self.messages[mid]} ({group})")
+
+            for mid in prof.get("include_messages", []):
+                py.append(f"        p.allow({mid})  # Manual include")
+
+            for group in prof.get("exclude_groups", []):
+                if group not in self.groups:
+                    continue
+                for mid in sorted(self.groups[group]):
+                    py.append(f"        p.deny({mid})  # {self.messages[mid]} ({group})")
+
+            for mid in prof.get("exclude_messages", []):
+                py.append(f"        p.deny({mid})  # Manual exclude")
+
+            py.append("        return p")
+            py.append("")
+
+        py.append("")
+        py.append("__all__ = [\"Profiles\"]")
+
+        with open(os.path.join(self.python_output_dir, "__init__.py"), "w") as f:
+            f.write("\n".join(py))
 
 if __name__ == "__main__":
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stanag-dli"
+version = "2.0.0"
+description = "STANAG 4586 DLI SDK Python runtime and generated message types"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "Proprietary" }
+authors = [
+  { name = "STANAG DLI SDK Maintainers" }
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "License :: Other/Proprietary License",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Libraries"
+]
+
+[tool.setuptools]
+package-dir = { "" = "idl/python" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["idl/python"]
+
+[tool.pytest.ini_options]
+testpaths = [
+  "idl/python/tests",
+  "generator/tests",
+]
